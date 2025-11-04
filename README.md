@@ -26,7 +26,9 @@
 ### 辅助合约
 
 4. **TestToken.sol** - 测试用代币合约
+
 5. **Math.sol** - 数学库（平方根计算）
+
 6. **UniswapV2Library.sol** - 工具库（价格计算、地址排序等）
 
 ### 依赖库
@@ -131,6 +133,7 @@ amountOut = (amountIn * 997 * reserveOut) / (reserveIn * 1000 + amountIn * 997)
 ```
 
 ### 流动性代币
+
 - 首次添加流动性：`liquidity = sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY`
 - 后续添加流动性：`liquidity = min(amount0 * totalSupply / reserve0, amount1 * totalSupply / reserve1)`
 
@@ -144,6 +147,7 @@ amountOut = (amountIn * 997 * reserveOut) / (reserveIn * 1000 + amountIn * 997)
 ## 测试
 
 测试文件包含以下测试用例：
+
 - ✅ 创建交易对
 - ✅ 防止重复创建交易对
 - ✅ 添加流动性
@@ -166,6 +170,7 @@ amountOut = (amountIn * 997 * reserveOut) / (reserveIn * 1000 + amountIn * 997)
 ## 与 Uniswap V2 的差异
 
 此实现简化了以下功能：
+
 - 没有价格累加器（用于 TWAP 预言机）
 - 没有协议费用分配逻辑
 - 没有 WETH 支持
