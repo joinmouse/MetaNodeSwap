@@ -26,6 +26,7 @@ describe("UniswapV2", function () {
     it("应该能创建交易对", async function () {
       await factory.createPair(await tokenA.getAddress(), await tokenB.getAddress());
       const pairAddress = await factory.getPair(await tokenA.getAddress(), await tokenB.getAddress());
+      console.log("pairAddress", pairAddress)
       expect(pairAddress).to.not.equal(ethers.ZeroAddress);
     });
 
@@ -37,11 +38,13 @@ describe("UniswapV2", function () {
     });
   });
 
-  describe("添加流动性", function () {
+  describe("Router: 添加流动性", function () {
     beforeEach(async function () {
       // 授权 Router
-      await tokenA.approve(await router.getAddress(), ethers.parseEther("1000000"));
-      await tokenB.approve(await router.getAddress(), ethers.parseEther("1000000"));
+      const routerAddress = await router.getAddress()
+      console.log("routerAddress", routerAddress)
+      await tokenA.approve(routerAddress, ethers.parseEther("1000000"));
+      await tokenB.approve(routerAddress, ethers.parseEther("1000000"));
     });
 
     it("应该能添加流动性", async function () {
@@ -60,8 +63,11 @@ describe("UniswapV2", function () {
         deadline
       );
 
+      // 获取交易对地址
       const pairAddress = await factory.getPair(await tokenA.getAddress(), await tokenB.getAddress());
+      // 获取交易对
       const Pair = await ethers.getContractFactory("UniswapV2Pair");
+      // 获取交易对的流动性
       pair = Pair.attach(pairAddress);
 
       const liquidity = await pair.balanceOf(owner.address);
@@ -69,7 +75,7 @@ describe("UniswapV2", function () {
     });
   });
 
-  describe("交换", function () {
+  describe("Router: 交换", function () {
     beforeEach(async function () {
       // 添加流动性
       await tokenA.approve(await router.getAddress(), ethers.parseEther("1000000"));
@@ -132,7 +138,7 @@ describe("UniswapV2", function () {
     });
   });
 
-  describe("移除流动性", function () {
+  describe("Router: 移除流动性", function () {
     beforeEach(async function () {
       // 添加流动性
       await tokenA.approve(await router.getAddress(), ethers.parseEther("1000000"));

@@ -54,7 +54,7 @@ contract UniswapV2Router {
     ) public ensure(deadline) returns (uint amountA, uint amountB) {
         address pair = IUniswapV2Factory(factory).getPair(tokenA, tokenB);
         IERC20(pair).transferFrom(msg.sender, pair, liquidity);
-        (uint amount0, uint amount1) = IUniswapV2Pair(pair).burn(to);
+        (uint amount0, uint amount1) = IUniswapV2Pair(pair).burn(to); 
         (address token0,) = UniswapV2Library.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
         require(amountA >= amountAMin, 'UniswapV2Router: INSUFFICIENT_A_AMOUNT');

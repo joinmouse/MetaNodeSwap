@@ -21,6 +21,7 @@ contract UniswapV2Pair is ERC20, IUniswapV2Pair {
     
     uint private unlocked = 1;
     
+    // 锁定
     modifier lock() {
         require(unlocked == 1, 'UniswapV2: LOCKED');
         unlocked = 0;
@@ -123,9 +124,10 @@ contract UniswapV2Pair is ERC20, IUniswapV2Pair {
         uint amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
         uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
         require(amount0In > 0 || amount1In > 0, 'UniswapV2: INSUFFICIENT_INPUT_AMOUNT');
-        
+
+
+        // 0.3% 手续费 
         {
-            // 0.3% 手续费
             uint balance0Adjusted = balance0 * 1000 - amount0In * 3;
             uint balance1Adjusted = balance1 * 1000 - amount1In * 3;
             require(balance0Adjusted * balance1Adjusted >= uint(_reserve0) * uint(_reserve1) * (1000**2), 'UniswapV2: K');

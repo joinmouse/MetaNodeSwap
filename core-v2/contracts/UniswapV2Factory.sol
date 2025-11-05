@@ -28,7 +28,8 @@ contract UniswapV2Factory is IUniswapV2Factory {
         
         // 创建新的交易对合约
         bytes memory bytecode = type(UniswapV2Pair).creationCode;
-        bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+        bytes32 salt = keccak256(abi.encodePacked(token0, token1));  // 加盐
+        // 使用create2创建交易对合约，并记录地址
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
