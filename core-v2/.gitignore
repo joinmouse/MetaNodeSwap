@@ -1,5 +1,6 @@
 node_modules
 .env
+.env.local
 
 # Hardhat files
 /cache
@@ -15,3 +16,17 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+
+# 可选：如果不想提交测试网部署记录，可以取消下面的注释
+# ignition/deployments/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
