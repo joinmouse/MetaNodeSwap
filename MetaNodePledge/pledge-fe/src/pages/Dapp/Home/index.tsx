@@ -30,6 +30,14 @@ function HomePage() {
   const [data, setdata] = useState([]);
   const [datastate, setdatastate] = useState([]);
   const [Id, setId] = useState(56);
+  
+  // 预过滤各标签页数据，提升切换性能
+  const [filteredData, setFilteredData] = useState({
+    BUSD: [],
+    USDT: [],
+    DAI: [],
+    PLGR: []
+  });
 
   const dealNumber18 = (num) => {
     if (num) {
@@ -82,26 +90,49 @@ function HomePage() {
         lendPrice: item.pool_data.lendTokenInfo.tokenPrice,
       };
     });
+    
     setdata(res);
-
-    setdatastate(res.filter((item) => item.state < 1));
+    
+    // 预过滤各标签页数据，提升切换性能
+    const liveData = res.filter((item) => item.state < 1);
+    const filtered = {
+      BUSD: liveData.filter(item => 
+        item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
+        item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA'
+      ),
+      USDT: liveData.filter(item => 
+        item.Sp === '0x55d398326f99059fF775485246999027B3197955' ||
+        item.Sp === '0x55d398326f99059ff775485246999027b3197955'
+      ),
+      DAI: liveData.filter(item => 
+        item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
+        item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B'
+      ),
+      PLGR: liveData.filter(item => 
+        item.Sp === '0x6Aa91CbfE045f9D154050226fCc830ddbA886CED'
+      )
+    };
+    setFilteredData(filtered);
+    setdatastate(liveData);
   };
 
   useEffect(() => {
     history.push('BUSD');
   }, [history]);
   useEffect(() => {
-    setTimeout(() => {
-      setId(chainId);
-      getPoolInfo(Id === undefined ? 56 : Id).catch(() => {
-        // Handle error silently
-      });
-    }, 1000);
-  }, [Id, chainId, getPoolInfo]);
+    const currentChainId = chainId || 56;
+    setId(currentChainId);
+    getPoolInfo(currentChainId).catch(() => {
+      // Handle error silently
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chainId]);
 
   const callback = (key) => {
     history.push(key);
     setpool(key);
+    // 使用预过滤的数据，避免实时过滤
+    setdatastate(filteredData[key] || []);
   };
   const handleVisibleChange = (visable, num) => {
     if (visable) {
@@ -257,7 +288,7 @@ function HomePage() {
         compare: (a, b) => a.margin_ratio - b.margin_ratio,
         multiple: 6,
       },
-      render: (val) => `${Number(val) + 100}%`,
+      render: (val) => `${val ? Number(val) + 100 : 0}%`,
     },
     {
       title: 'Collateralization Ratio',
@@ -409,21 +440,9 @@ function HomePage() {
               label: 'BUSD',
               children: (
                 <Table
-                  pagination={
-                    datastate.filter(
-                      (item) =>
-                        item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
-                        item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA',
-                    ).length < 10
-                      ? false
-                      : {}
-                  }
+                  pagination={datastate.length < 10 ? false : {}}
                   columns={columns}
-                  dataSource={datastate.filter(
-                    (item) =>
-                      item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
-                      item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA',
-                  )}
+                  dataSource={datastate}
                   rowClassName={(record) => record}
                 />
               )
@@ -433,9 +452,9 @@ function HomePage() {
               label: 'USDT',
               children: (
                 <Table
-                  pagination={datastate.filter((item) => item.Sp === '').length < 10 ? false : {}}
+                  pagination={datastate.length < 10 ? false : {}}
                   columns={columns}
-                  dataSource={datastate.filter((item) => item.Sp === '')}
+                  dataSource={datastate}
                   rowClassName={(record) => record}
                 />
               )
@@ -477,7 +496,7 @@ function HomePage() {
                         : {}
                     }
                     columns={columns}
-                    dataSource={datastate.filter((item) => item.Sp === '0x6Aa91CbfE045f9D154050226fCc830ddbA886CED')}
+                  dataSource={datastate}
                     rowClassName={(record) => record}
                   />
                 )
@@ -495,21 +514,9 @@ function HomePage() {
               label: 'BUSD',
               children: (
                 <Table
-                  pagination={
-                    datastate.filter(
-                      (item) =>
-                        item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
-                        item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA',
-                    ).length < 10
-                      ? false
-                      : {}
-                  }
+                  pagination={datastate.length < 10 ? false : {}}
                   columns={columns1}
-                  dataSource={datastate.filter(
-                    (item) =>
-                      item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
-                      item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA',
-                  )}
+                  dataSource={datastate}
                   rowClassName={(record) => record}
                 />
               )
@@ -519,9 +526,9 @@ function HomePage() {
               label: 'USDT',
               children: (
                 <Table
-                  pagination={datastate.filter((item) => item.Sp === '').length < 10 ? false : {}}
+                  pagination={datastate.length < 10 ? false : {}}
                   columns={columns1}
-                  dataSource={datastate.filter((item) => item.Sp === '')}
+                  dataSource={datastate}
                   rowClassName={(record) => record}
                 />
               )
@@ -541,11 +548,7 @@ function HomePage() {
                       : {}
                   }
                   columns={columns1}
-                  dataSource={datastate.filter(
-                    (item) =>
-                      item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
-                      item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B',
-                  )}
+                  dataSource={datastate}
                   rowClassName={(record) => record}
                 />
               )

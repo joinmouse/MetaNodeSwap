@@ -22,7 +22,12 @@ export default async function getTokenList(
   listUrl: string,
   resolveENSContentHash: (ensName: string) => Promise<string>
 ): Promise<TokenList> {
-  if (listUrl === DEFAULT_TOKEN_LIST_URL) {
+  // 本地开发环境直接调用API，不使用默认静态JSON
+  const isLocalDev = typeof window !== 'undefined' && 
+    (window.location.hostname.includes('127.0.0.1') || window.location.hostname.includes('localhost'));
+  
+  // 仅在非本地环境且URL匹配时返回默认数据
+  if (!isLocalDev && listUrl === DEFAULT_TOKEN_LIST_URL) {
     return defaultTokenJson
   }
   const parsedENS = parseENSAddress(listUrl)
