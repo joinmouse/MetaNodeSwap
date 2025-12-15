@@ -25,30 +25,17 @@ Market Pool 是固定利率借贷市场，连接出借方和借款方。
 
 ---
 
-## 🚀 快速启动
-
-```bash
-# 安装依赖
-yarn install
-
-# 启动开发服务器
-yarn dev
-
-# 构建生产版本
-yarn build
-```
-
----
-
 ## 🧪 功能测试指南
 
 ### 前置准备工作
 
 #### ✅ 第一步：安装 MetaMask 钱包
+
 1. 浏览器安装 MetaMask 插件
 2. 创建或导入钱包账户
 
 #### ✅ 第二步：切换到 BSC 测试网
+
 在 MetaMask 中手动添加网络：
 
 | 配置项 | 值 |
@@ -60,6 +47,7 @@ yarn build
 | 区块浏览器 | `https://testnet.bscscan.com` |
 
 #### ✅ 第三步：获取测试代币
+
 - 访问 [BSC Testnet Faucet](https://testnet.binance.org/faucet-smart) 获取测试 BNB
 
 ---

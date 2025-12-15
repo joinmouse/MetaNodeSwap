@@ -288,7 +288,10 @@ function HomePage() {
         compare: (a, b) => a.margin_ratio - b.margin_ratio,
         multiple: 6,
       },
-      render: (val) => `${val ? Number(val) + 100 : 0}%`,
+      render: (val) => {
+        const numVal = val ? Number(val) : 0;
+        return `${isNaN(numVal) ? 100 : numVal + 100}%`;
+      },
     },
     {
       title: 'Collateralization Ratio',

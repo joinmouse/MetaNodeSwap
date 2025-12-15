@@ -302,6 +302,11 @@ const CoinPool: React.FC<ICoinPool> = ({ mode, pool, coin }) => {
         var days = parseInt(difftime / 86400 + '');
         console.log('state', item.pool_data.state);
         console.log(item.pool_data.autoLiquidateThreshold);
+        // 计算 margin_ratio，处理空值和 NaN 的情况
+        const autoLiquidateValue = dealNumber_8(item.pool_data.autoLiquidateThreshold);
+        const marginRatioNum = autoLiquidateValue ? Number(autoLiquidateValue) : 0;
+        const marginRatio = isNaN(marginRatioNum) ? 0 : marginRatioNum;
+
         return {
           key: index + 1,
           state: item.pool_data.state,
@@ -311,8 +316,8 @@ const CoinPool: React.FC<ICoinPool> = ({ mode, pool, coin }) => {
           available_to_lend: [borrowSupply, lendSupply],
           settlement_date: settlementdate,
           length: days,
-          margin_ratio: `${100 + Number(dealNumber_8(item.pool_data.autoLiquidateThreshold))}%`,
-          collateralization_ratio: dealNumber_8(item.pool_data.martgageRate),
+          margin_ratio: `${100 + marginRatio}%`,
+          collateralization_ratio: dealNumber_8(item.pool_data.martgageRate) || '0',
           poolname: item.pool_data.lendTokenInfo.tokenName,
           endTime: item.pool_data.endTime,
           settleTime: item.pool_data.settleTime,

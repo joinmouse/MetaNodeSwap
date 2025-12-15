@@ -159,7 +159,7 @@ ${props.props.poolname} `,
                       <ul className="medialist">
                         <li>
                           <span>Margin Ratio</span>
-                          <span>{`${Number(props.props.margin_ratio) + 100}%`}</span>
+                          <span>{`${isNaN(Number(props.props.margin_ratio)) ? 100 : Number(props.props.margin_ratio) + 100}%`}</span>
                         </li>
                         <li>
                           <span>Collateralization Ratio</span>
