@@ -2,12 +2,24 @@ import { useState, useEffect } from 'react';
 import { injected } from './connector';
 import { useActiveWeb3React } from '_src/hooks';
 
+// 断开连接标志的 key
+export const DISCONNECT_WALLET_KEY = 'disconnectWallet';
+
 export function useEagerConnect() {
   const { activate, active } = useActiveWeb3React();
 
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
+    // 检查是否用户主动断开了连接
+    const isDisconnected = window.localStorage.getItem(DISCONNECT_WALLET_KEY) === 'true';
+    
+    if (isDisconnected) {
+      // 用户主动断开，不自动重连
+      setTried(true);
+      return;
+    }
+
     injected.isAuthorized().then((isAuthorized) => {
       if (isAuthorized) {
         activate(injected, undefined, true).catch(() => {

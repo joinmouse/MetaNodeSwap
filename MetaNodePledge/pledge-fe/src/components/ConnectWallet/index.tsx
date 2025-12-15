@@ -6,7 +6,7 @@ import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
 // import ChainBridge from '@/constants/ChainBridge';
 import { chainInfoState, walletModalOpen } from './../../model/global';
 import styled, { css } from 'styled-components';
-import { useEagerConnect, useInactiveListener } from './WalletHooks';
+import { useEagerConnect, useInactiveListener, DISCONNECT_WALLET_KEY } from './WalletHooks';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import ChainBridge from '_constants/ChainBridge';
@@ -17,6 +17,7 @@ import WalletModal from './../WalletModal';
 import { injected } from './connector';
 import services from './../../services';
 import { useActiveWeb3React } from '_src/hooks';
+import { connectorLocalStorageKey } from '@pancakeswap-libs/uikit';
 
 // import { modal } from
 
@@ -112,6 +113,22 @@ const ConnectWallet: React.FC<IConnectWallet> = () => {
     // }
   }
 
+  // 断开钱包连接
+  function handleDisconnect() {
+    try {
+      // 设置断开连接标志，阻止自动重连
+      window.localStorage.setItem(DISCONNECT_WALLET_KEY, 'true');
+      deactivate();
+      // 清除本地存储的连接状态
+      window.localStorage.removeItem(connectorLocalStorageKey);
+      window.localStorage.removeItem('walletconnect');
+      // 刷新页面以确保完全断开
+      window.location.reload();
+    } catch (error) {
+      console.error('Disconnect error:', error);
+    }
+  }
+
   function ButtonSwitchComponent() {
     if (connected && isDisconnect) {
       return (
@@ -134,6 +151,25 @@ const ConnectWallet: React.FC<IConnectWallet> = () => {
                     </div>
                   </WalletInfo>
                 )
+              },
+              {
+                type: 'divider'
+              },
+              {
+                key: 'disconnect',
+                label: (
+                  <div style={{ 
+                    color: '#ff4d4f', 
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>🔌</span>
+                    <span>Disconnect</span>
+                  </div>
+                ),
+                onClick: handleDisconnect
               }
             ]
           }}

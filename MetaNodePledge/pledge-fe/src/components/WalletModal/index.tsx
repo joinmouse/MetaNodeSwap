@@ -1,6 +1,7 @@
 import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
 
 import type { AbstractConnector } from '@web3-react/abstract-connector';
+import { DISCONNECT_WALLET_KEY } from '../ConnectWallet/WalletHooks';
 import { Modal } from 'antd';
 import Option from './Option';
 import React from 'react';
@@ -10,6 +11,7 @@ import styled from 'styled-components/macro';
 import { useActiveWeb3React } from '_src/hooks';
 import { useRecoilState } from 'recoil';
 import { walletModalOpen } from './../../model/global';
+
 const Wrapper = styled.div`
   width: 100%;
 `;
@@ -83,6 +85,8 @@ export default function WalletModal({}: // pendingTransactions,
 
     activate(connector, undefined, true)
       .then(async () => {
+        // 连接成功，清除断开连接标志
+        window.localStorage.removeItem(DISCONNECT_WALLET_KEY);
         setWallOpen(false);
       })
       .catch((errors) => {

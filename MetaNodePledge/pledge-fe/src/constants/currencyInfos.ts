@@ -60,7 +60,7 @@ const currencyInfos = {
         symbol: 'BNB',
         decimals: 18,
       },
-      rpcUrls: ['https://data-seed-prebsc-1-s1.binance.org:8545'],
+      rpcUrls: ['https://bsc-testnet-rpc.publicnode.com'],
       blockExplorerUrls: ['https://testnet.bscscan.com'],
     },
   },
