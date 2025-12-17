@@ -1,7 +1,7 @@
 import './index.less';
 
-import { Divider, Progress, Space, notification } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { notification } from 'antd';
+import React, { useState } from 'react';
 
 import BNB from '_src/assets/images/order_BNB.png';
 import BTCB from '_src/assets/images/order_BTCB.png';
@@ -13,12 +13,10 @@ import Error from '_src/assets/images/Error.png';
 import Success from '_src/assets/images/Success.png';
 import USDT from '_src/assets/images/order_USDT.png';
 import Union from '_src/assets/images/union.png';
-import classnames from 'classnames';
 import icon3 from '_src/assets/images/icon (3).png';
 import icon4 from '_src/assets/images/icon (4).png';
 import services from '_src/services';
 import { useActiveWeb3React } from '_src/hooks';
-import { web3 } from '_src/services/web3';
 import { TESTNET_TOKEN_ADDRESSES } from '_src/constants/tokenAddresses';
 
 export interface ITestnetTokens {
@@ -154,7 +152,7 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BTCB, 'BTCB')}
+              onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BTCB, 'BTCB')}
             >
               Add Token
             </Button>
@@ -192,7 +190,7 @@ onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BTCB, 'BTCB')}
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
+            onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
             >
               Add Token
             </Button>
@@ -230,7 +228,7 @@ onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.DAI, 'DAI')}
+              onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.DAI, 'DAI')}
             >
               Add Token
             </Button>
@@ -256,7 +254,5 @@ onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.DAI, 'DAI')}
     </div>
   );
 };
-
-
 
 export default TestnetTokens;

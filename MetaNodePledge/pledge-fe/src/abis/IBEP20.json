@@ -121,7 +121,7 @@
   },
   {
     "constant": false,
-    "inputs": [{ "internalType": "address", "name": "to", "type": "address" }],
+    "inputs": [],
     "name": "faucet_transfer",
     "outputs": [],
     "payable": false,
