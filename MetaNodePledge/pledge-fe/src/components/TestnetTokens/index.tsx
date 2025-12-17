@@ -1,6 +1,6 @@
 import './index.less';
 
-import { notification } from 'antd';
+import { message } from 'antd';
 import React, { useState } from 'react';
 
 import BNB from '_src/assets/images/order_BNB.png';
@@ -9,12 +9,6 @@ import BUSD from '_src/assets/images/BUSDcoin.png';
 import Button from '_components/Button';
 import DAI from '_src/assets/images/order_DAI.png';
 import { DappLayout } from '_src/Layout';
-import Error from '_src/assets/images/Error.png';
-import Success from '_src/assets/images/Success.png';
-import USDT from '_src/assets/images/order_USDT.png';
-import Union from '_src/assets/images/union.png';
-import icon3 from '_src/assets/images/icon (3).png';
-import icon4 from '_src/assets/images/icon (4).png';
 import services from '_src/services';
 import { useActiveWeb3React } from '_src/hooks';
 import { TESTNET_TOKEN_ADDRESSES } from '_src/constants/tokenAddresses';
@@ -23,17 +17,30 @@ export interface ITestnetTokens {
   className?: string;
   style?: React.CSSProperties;
   props?: any;
-  mode: string;
+  mode?: string;
 }
 
-const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null, props, mode = '' }) => {
+const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = {}, props = {}, mode = '' }) => {
   const [loadingsbusd, setloadingsbusd] = useState(false);
   const [loadingsbtc, setloadingsbtc] = useState(false);
-
   const [loadingsdai, setloadingsdai] = useState(false);
-  const { connector, library, chainId, account, activate, deactivate, active, error } = useActiveWeb3React();
+  const { library, account } = useActiveWeb3React();
 
-  const getImporttoken = (address, coin) => {
+  // 使用 useMessage Hook，避免 findDOMNode 警告
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // Format remaining time to readable format
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  // 添加代币到钱包
+  const getImporttoken = (address: string, coin: string) => {
     library.provider
       .request({
         method: 'wallet_watchAsset',
@@ -51,81 +58,47 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
       })
       .catch(() => console.log(false));
   };
-  const openNotificationclaim = (placement) => {
-    notification.config({
-      closeIcon: <img src={Union} alt="" style={{ width: '10px', height: '10px', margin: '14px' }} />,
-    });
-    notification.open({
-      style: { width: '340px', height: '90px', padding: '0' },
 
-      message: (
-        <div
-          style={{
-            border: '1px solid #2DE0E0',
-            width: '340px',
-            height: '90px',
-            background: ' #fff',
-            borderRadius: '4px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-            padding: '21px',
-          }}
-        >
-          <div
-            className="messagetab"
-            style={{
-              display: 'flex',
-            }}
-          >
-            <img src={Success} alt="" style={{ width: '22px', height: '22px', marginRight: '11px' }} />
-            <p style={{ fontSize: '16px', lineHeight: '24px', fontWeight: 600, margin: '0' }}>{placement}</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <p style={{ margin: '0 9.4px 0 33px' }}>{'Claim success'}</p>{' '}
-            <img src={icon3} alt="" style={{ width: '11.2px', height: '11.2px' }} />
-          </div>
-        </div>
-      ),
-    });
-  };
-  const openNotificationerrorclaim = (placement) => {
-    notification.config({
-      closeIcon: <img src={Union} alt="" style={{ width: '10px', height: '10px', margin: '14px' }} />,
-    });
-    notification.open({
-      style: { width: '340px', height: '90px', padding: '0' },
+  // 领取代币（带冷却时间检查）
+  const handleClaim = async (contractAddress: string, tokenName: string, setLoading: (loading: boolean) => void) => {
+    if (!account) {
+      messageApi.warning('Please connect your wallet first');
+      return;
+    }
 
-      message: (
-        <div
-          style={{
-            border: '1px solid #ff3369',
-            width: '340px',
-            height: '90px',
-            background: ' #fff',
-            borderRadius: '4px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-            padding: '21px',
-          }}
-        >
-          <div
-            className="messagetaberror"
-            style={{
-              display: 'flex',
-            }}
-          >
-            <img src={Error} alt="" style={{ width: '22px', height: '22px', marginRight: '11px' }} />
-            <p style={{ fontSize: '16px', lineHeight: '24px', fontWeight: 600, margin: '0' }}>{placement}</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <p style={{ margin: '0 9.4px 0 33px' }}>{'claim error'}</p>{' '}
-            <img src={icon4} alt="" style={{ width: '11.2px', height: '11.2px' }} />
-          </div>
-        </div>
-      ),
-    });
+    setLoading(true);
+
+    try {
+      // 先检查是否在冷却时间内
+      const remainingTime = await services.IBEP20Server.getTimeUntilNextClaim(contractAddress, account);
+      if (remainingTime > 0) {
+        // Show friendly cooldown message
+        messageApi.warning(
+          `You can only claim ${tokenName} once every 24 hours. Please wait ${formatTime(remainingTime)}`,
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Execute claim
+      await services.IBEP20Server.getfaucet_transfer(contractAddress);
+      messageApi.success(`${tokenName} claimed successfully! 🎉`);
+    } catch (error: any) {
+      // Handle error cases
+      if (error?.message?.includes('24 hours')) {
+        messageApi.warning(`You can only claim ${tokenName} once every 24 hours`);
+      } else {
+        messageApi.error(`Failed to claim ${tokenName}. Please try again later`);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div style={style}>
-      <DappLayout title={'Get Testnet Tokens'} className="testnetpages">
+      {contextHolder}
+      <DappLayout title="Get Testnet Tokens" className="testnetpages">
         <ul>
           <li>
             <img src={BNB} alt="" />
@@ -159,16 +132,7 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
             <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.BTCB}</p>
             <Button
               loading={loadingsbtc}
-              onClick={() => {
-                setloadingsbtc(true);
-                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.BTCB)
-                  .then((res) => {
-                    openNotificationclaim('Success'), setloadingsbtc(false);
-                  })
-                  .catch(() => {
-                    openNotificationerrorclaim('error'), setloadingsbtc(false);
-                  });
-              }}
+              onClick={() => handleClaim(TESTNET_TOKEN_ADDRESSES.BTCB, 'BTCB', setloadingsbtc)}
             >
               Claim
             </Button>
@@ -190,23 +154,14 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-            onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
+              onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
             >
               Add Token
             </Button>
             <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.BUSD}</p>
             <Button
               loading={loadingsbusd}
-              onClick={() => {
-                setloadingsbusd(true);
-                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.BUSD)
-                  .then((res) => {
-                    openNotificationclaim('Success'), setloadingsbusd(false);
-                  })
-                  .catch(() => {
-                    openNotificationerrorclaim('error'), setloadingsbusd(false);
-                  });
-              }}
+              onClick={() => handleClaim(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD', setloadingsbusd)}
             >
               Claim
             </Button>
@@ -235,16 +190,7 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
             <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.DAI}</p>
             <Button
               loading={loadingsdai}
-              onClick={() => {
-                setloadingsdai(true);
-                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.DAI)
-                  .then((res) => {
-                    openNotificationclaim('Success'), setloadingsdai(false);
-                  })
-                  .catch(() => {
-                    openNotificationerrorclaim('error'), setloadingsdai(false);
-                  });
-              }}
+              onClick={() => handleClaim(TESTNET_TOKEN_ADDRESSES.DAI, 'DAI', setloadingsdai)}
             >
               Claim
             </Button>

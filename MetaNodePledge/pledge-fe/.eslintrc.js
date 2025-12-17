@@ -21,6 +21,10 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
     'react/button-has-type': 'off',
     'react/prop-types': 'off',
+// 允许使用函数参数默认值代替 defaultProps（现代 React 推荐写法）
+    'react/require-default-props': ['error', {
+      functions: 'defaultArguments',
+    }],
     'react/sort-comp': 'off',
     'import/extensions': 'off',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
