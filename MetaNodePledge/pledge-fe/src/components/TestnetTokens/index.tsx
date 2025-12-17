@@ -47,12 +47,12 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = {}, p
         params: {
           type: 'ERC20',
           options: {
-            address: address,
+            address,
             symbol: coin,
             decimals: 18,
           },
         },
-      })
+      } as any)
       .then((success) => {
         console.log(success);
       })
