@@ -19,6 +19,7 @@ import icon4 from '_src/assets/images/icon (4).png';
 import services from '_src/services';
 import { useActiveWeb3React } from '_src/hooks';
 import { web3 } from '_src/services/web3';
+import { TESTNET_TOKEN_ADDRESSES } from '_src/constants/tokenAddresses';
 
 export interface ITestnetTokens {
   className?: string;
@@ -134,7 +135,7 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
             <p style={{ marginBottom: '95px' }} className="tokenaddress">
               Please use faucet link to get BNB in testnet
             </p>
-            <Button onClick={() => window.open('https://testnet.binance.org/faucet-smart')}>Go to Faucet</Button>
+            <Button onClick={() => window.open('https://www.bnbchain.org/en/testnet-faucet')}>Go to Faucet</Button>
           </li>
           <li>
             <img src={BTCB} alt="" />
@@ -153,16 +154,16 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-              onClick={() => getImporttoken('0xB5514a4FA9dDBb48C3DE215Bc9e52d9fCe2D8658', 'BTCB')}
+onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BTCB, 'BTCB')}
             >
               Add Token
             </Button>
-            <p className="tokenaddress">0xB5514a4FA9dDBb48C3DE215Bc9e52d9fCe2D8658</p>
+            <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.BTCB}</p>
             <Button
               loading={loadingsbtc}
               onClick={() => {
                 setloadingsbtc(true);
-                services.IBEP20Server.getfaucet_transfer('0xB5514a4FA9dDBb48C3DE215Bc9e52d9fCe2D8658')
+                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.BTCB)
                   .then((res) => {
                     openNotificationclaim('Success'), setloadingsbtc(false);
                   })
@@ -191,16 +192,16 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-              onClick={() => getImporttoken('0xE676Dcd74f44023b95E0E2C6436C97991A7497DA', 'BUSD')}
+onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.BUSD, 'BUSD')}
             >
               Add Token
             </Button>
-            <p className="tokenaddress">0xE676Dcd74f44023b95E0E2C6436C97991A7497DA</p>
+            <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.BUSD}</p>
             <Button
               loading={loadingsbusd}
               onClick={() => {
                 setloadingsbusd(true);
-                services.IBEP20Server.getfaucet_transfer('0xE676Dcd74f44023b95E0E2C6436C97991A7497DA')
+                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.BUSD)
                   .then((res) => {
                     openNotificationclaim('Success'), setloadingsbusd(false);
                   })
@@ -229,16 +230,16 @@ const TestnetTokens: React.FC<ITestnetTokens> = ({ className = '', style = null,
                 background: '#fff',
                 margin: '0 auto 24px ',
               }}
-              onClick={() => getImporttoken('0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B', 'DAI')}
+onClick={() => getImporttoken(TESTNET_TOKEN_ADDRESSES.DAI, 'DAI')}
             >
               Add Token
             </Button>
-            <p className="tokenaddress">0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B</p>
+            <p className="tokenaddress">{TESTNET_TOKEN_ADDRESSES.DAI}</p>
             <Button
               loading={loadingsdai}
               onClick={() => {
                 setloadingsdai(true);
-                services.IBEP20Server.getfaucet_transfer('0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B')
+                services.IBEP20Server.getfaucet_transfer(TESTNET_TOKEN_ADDRESSES.DAI)
                   .then((res) => {
                     openNotificationclaim('Success'), setloadingsdai(false);
                   })

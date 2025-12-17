@@ -1,4 +1,5 @@
 import { ChainId, JSBI, Percent, Token, WETH } from '@pswww/sdk';
+import { TESTNET_TOKEN_ADDRESSES } from './tokenAddresses';
 
 export const ROUTER_ADDRESS = '0x1088d1860f4E51A2e20440eD23619a1D0D59beB0';
 
@@ -8,10 +9,10 @@ type ChainTokenList = {
 };
 
 export const CAKE = new Token(ChainId.TESTNET, '0xEAEd08168a2D34Ae2B9ea1c1f920E0BC00F9fA67', 18, 'CAKE', 'CAKE');
-export const WBNB = new Token(ChainId.TESTNET, '0x0dE8FCAE8421fc79B29adE9ffF97854a424Cad09', 18, 'WBNB', 'Wrapped BNB');
-export const DAI = new Token(ChainId.TESTNET, '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B', 18, 'DAI', 'DAI');
-export const BUSD = new Token(ChainId.TESTNET, '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA', 18, 'BUSD', 'BUSD');
-export const BTC = new Token(ChainId.TESTNET, '0xB5514a4FA9dDBb48C3DE215Bc9e52d9fCe2D8658', 8, 'BTC', 'BTC');
+export const WBNB = new Token(ChainId.TESTNET, TESTNET_TOKEN_ADDRESSES.WBNB, 18, 'WBNB', 'Wrapped BNB');
+export const DAI = new Token(ChainId.TESTNET, TESTNET_TOKEN_ADDRESSES.DAI, 18, 'DAI', 'DAI');
+export const BUSD = new Token(ChainId.TESTNET, TESTNET_TOKEN_ADDRESSES.BUSD, 18, 'BUSD', 'BUSD');
+export const BTC = new Token(ChainId.TESTNET, TESTNET_TOKEN_ADDRESSES.BTCB, 18, 'BTCB', 'BTCB');
 export const BNB = new Token(ChainId.TESTNET, '0x0000000000000000000000000000000000000000', 18, 'BNB', 'BNB');
 
 const WETH_ONLY: ChainTokenList = {

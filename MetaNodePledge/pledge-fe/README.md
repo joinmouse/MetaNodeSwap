@@ -48,7 +48,7 @@ Market Pool 是固定利率借贷市场，连接出借方和借款方。
 
 #### ✅ 第三步：获取测试代币
 
-- 访问 [BSC Testnet Faucet](https://testnet.binance.org/faucet-smart) 获取测试 BNB
+- 访问 [BSC Testnet Faucet](https://www.bnbchain.org/en/testnet-faucet) 获取测试 BNB
 
 ---
 

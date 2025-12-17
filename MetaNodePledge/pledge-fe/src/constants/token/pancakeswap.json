@@ -2,11 +2,11 @@
   "name": "Pledge Token List",
   "logoURI": "https://dev-v2-backend.pledger.finance/storage/img/Pledge-project-logo.png",
   "tokens": [
-    {
+{
       "name": "DAI",
       "decimals": 18,
       "symbol": "DAI",
-      "address": "0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B",
+      "address": "0x5Bf9C25492AFF8990C7c16a1E70e22C136a42de5",
       "chainId": 97,
       "logoURI": "https://dev-v2-backend.pledger.finance/storage/img/DAI.png"
     },
@@ -14,17 +14,25 @@
       "name": "BUSD",
       "decimals": 18,
       "symbol": "BUSD",
-      "address": "0xE676Dcd74f44023b95E0E2C6436C97991A7497DA",
+      "address": "0x3428bFc1AC181205B91AC25B56136f1B59c55ae4",
       "chainId": 97,
       "logoURI": "https://dev-v2-backend.pledger.finance/storage/img/BUSD.png"
     },
-    {
-      "name": "BTC",
-      "decimals": 8,
-      "symbol": "BTC",
-      "address": "0xB5514a4FA9dDBb48C3DE215Bc9e52d9fCe2D8658",
+{
+      "name": "BTCB",
+      "decimals": 18,
+      "symbol": "BTCB",
+      "address": "0xA70cA3e5a91Da9E8ef61c3a214f7d6D3ca03Be26",
       "chainId": 97,
       "logoURI": "https://dev-v2-backend.pledger.finance/storage/img/BTC.png"
+    },
+    {
+      "name": "USDT",
+      "decimals": 18,
+      "symbol": "USDT",
+      "address": "0x4A7A4be59fD51E998e737c0312b7582a88B53687",
+      "chainId": 97,
+      "logoURI": "https://dev-v2-backend.pledger.finance/storage/img/USDT.png"
     },
     {
       "name": "CAKE",

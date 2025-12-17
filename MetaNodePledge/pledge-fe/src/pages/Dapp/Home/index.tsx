@@ -16,6 +16,7 @@ import PageUrl from '_constants/pageURL';
 import moment from 'moment';
 import services from '_src/services';
 import { useWeb3React } from '@web3-react/core';
+import { MAINNET_TOKEN_ADDRESSES, TESTNET_TOKEN_ADDRESSES } from '_src/constants/tokenAddresses';
 
 function HomePage() {
   const history = useHistory();
@@ -96,17 +97,17 @@ function HomePage() {
     // 预过滤各标签页数据，提升切换性能
     const liveData = res.filter((item) => item.state < 1);
     const filtered = {
-      BUSD: liveData.filter(item => 
-        item.Sp === '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56' ||
-        item.Sp === '0xE676Dcd74f44023b95E0E2C6436C97991A7497DA'
+BUSD: liveData.filter(item => 
+        item.Sp === MAINNET_TOKEN_ADDRESSES.BUSD ||
+        item.Sp === TESTNET_TOKEN_ADDRESSES.BUSD
       ),
       USDT: liveData.filter(item => 
-        item.Sp === '0x55d398326f99059fF775485246999027B3197955' ||
-        item.Sp === '0x55d398326f99059ff775485246999027b3197955'
+        item.Sp === MAINNET_TOKEN_ADDRESSES.USDT ||
+        item.Sp === MAINNET_TOKEN_ADDRESSES.USDT.toLowerCase()
       ),
-      DAI: liveData.filter(item => 
-        item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
-        item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B'
+DAI: liveData.filter(item => 
+        item.Sp === MAINNET_TOKEN_ADDRESSES.DAI ||
+        item.Sp === TESTNET_TOKEN_ADDRESSES.DAI
       ),
       PLGR: liveData.filter(item => 
         item.Sp === '0x6Aa91CbfE045f9D154050226fCc830ddbA886CED'
@@ -468,11 +469,11 @@ function HomePage() {
                 label: 'DAI',
                 children: (
                   <Table
-                    pagination={
+pagination={
                       datastate.filter(
                         (item) =>
-                          item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
-                          item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B',
+                          item.Sp === MAINNET_TOKEN_ADDRESSES.DAI ||
+                          item.Sp === TESTNET_TOKEN_ADDRESSES.DAI,
                       ).length < 10
                         ? false
                         : {}
@@ -480,8 +481,8 @@ function HomePage() {
                     columns={columns}
                     dataSource={datastate.filter(
                       (item) =>
-                        item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
-                        item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B',
+                        item.Sp === MAINNET_TOKEN_ADDRESSES.DAI ||
+                        item.Sp === TESTNET_TOKEN_ADDRESSES.DAI,
                     )}
                     rowClassName={(record) => record}
                   />
@@ -541,11 +542,11 @@ function HomePage() {
               label: 'DAI',
               children: (
                 <Table
-                  pagination={
+pagination={
                     datastate.filter(
                       (item) =>
-                        item.Sp === '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3' ||
-                        item.Sp === '0x490BC3FCc845d37C1686044Cd2d6589585DE9B8B',
+                        item.Sp === MAINNET_TOKEN_ADDRESSES.DAI ||
+                        item.Sp === TESTNET_TOKEN_ADDRESSES.DAI,
                     ).length < 10
                       ? false
                       : {}
