@@ -153,3 +153,63 @@ export const TESTNET_TOKEN_ADDRESSES = {
 ```
 
 > **注意**：如果重新部署了测试代币，只需更新此文件中的地址即可，其他文件会自动引用。
+
+---
+
+## 🎫 债务凭证代币 (SP-Token / JP-Token)
+
+### BSC 测试网 (ChainId: 97)
+
+项目已在 BSC 测试网部署了借贷凭证代币，用于跟踪用户的出借和借款记录。
+
+#### MultiSigWallet（多签钱包）
+```
+0x4A14A993dCFdC474713FA545cc6Ed6ea01d1e8B4
+```
+
+#### SP-Token（出借方凭证）
+
+| 代币 | 合约地址 | 用途 |
+|------|----------|------|
+| **SP-BUSD** | `0xa4aD829da27A326048FeE8CD7DeC967b7eBCbDED` | 出借 BUSD 获得的凭证 |
+| **SP-DAI** | `0x5e834cEBE830E2CAB24b058B1Eccc1cE16d80B4e` | 出借 DAI 获得的凭证 |
+| **SP-USDT** | `0x1b4A4f400b00AE18cc1E1967c9aD9Bace22F429D` | 出借 USDT 获得的凭证 |
+
+#### JP-Token（借款方凭证）
+
+| 代币 | 合约地址 | 用途 |
+|------|----------|------|
+| **JP-BUSD** | `0xFE97019fb66de1E8Ee3e5fCAc6189c2ba6F77059` | 借 BUSD 的债务凭证 |
+| **JP-DAI** | `0x6e41A2E76BA1d500c4569c707C5F2611dB12B393` | 借 DAI 的债务凭证 |
+| **JP-USDT** | `0x63e466D034e421499c59EA689f2B9D539EA59198` | 借 USDT 的债务凭证 |
+
+#### 部署命令
+
+```bash
+cd pledge-contract
+npx hardhat run scripts/deployDebtTokens.js --network bscTestnet
+```
+
+#### 部署后配置
+
+部署完成后，需要更新数据库中的池子信息：
+
+```sql
+-- 更新 BUSD 池子的 SP/JP Token 地址
+UPDATE poolbases SET 
+  sp_coin = '0xa4aD829da27A326048FeE8CD7DeC967b7eBCbDED',
+  jp_coin = '0xFE97019fb66de1E8Ee3e5fCAc6189c2ba6F77059'
+WHERE chain_id = '97' AND lend_token_symbol = 'BUSD';
+
+-- 更新 DAI 池子的 SP/JP Token 地址
+UPDATE poolbases SET 
+  sp_coin = '0x5e834cEBE830E2CAB24b058B1Eccc1cE16d80B4e',
+  jp_coin = '0x6e41A2E76BA1d500c4569c707C5F2611dB12B393'
+WHERE chain_id = '97' AND lend_token_symbol = 'DAI';
+
+-- 更新 USDT 池子的 SP/JP Token 地址
+UPDATE poolbases SET 
+  sp_coin = '0x1b4A4f400b00AE18cc1E1967c9aD9Bace22F429D',
+  jp_coin = '0x63e466D034e421499c59EA689f2B9D539EA59198'
+WHERE chain_id = '97' AND lend_token_symbol = 'USDT';
+```
