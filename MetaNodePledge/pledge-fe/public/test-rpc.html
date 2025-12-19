@@ -953,24 +953,41 @@
                     return;
                 }
                 
-                log('1️⃣ 检查 MetaMask 基本信息...');
+                log('1️⃣ 检查浏览器环境...');
+                log(`浏览器: ${navigator.userAgent}`);
+                log(`语言: ${navigator.language}`);
+                log(`在线状态: ${navigator.onLine ? '✅ 在线' : '❌ 离线'}`);
+                log('');
+                
+                log('2️⃣ 检查 MetaMask 基本信息...');
                 log(`isMetaMask: ${window.ethereum.isMetaMask}`);
                 log(`isConnected: ${window.ethereum.isConnected ? window.ethereum.isConnected() : '未知'}`);
                 log(`networkVersion: ${window.ethereum.networkVersion}`);
                 log(`chainId: ${window.ethereum.chainId}`);
                 log(`selectedAddress: ${window.ethereum.selectedAddress}`);
+                
+                // 检查是否有多个钱包插件冲突
+                if (window.ethereum.providers && window.ethereum.providers.length > 1) {
+                    log(`⚠️ 检测到 ${window.ethereum.providers.length} 个钱包插件，可能存在冲突！`, 'warning');
+                    window.ethereum.providers.forEach((provider, index) => {
+                        log(`  插件${index + 1}: ${provider.isMetaMask ? 'MetaMask' : '其他钱包'}`);
+                    });
+                } else {
+                    log(`✅ 只有一个钱包插件`, 'success');
+                }
                 log('');
                 
-                log('2️⃣ 检查 RPC 连接...');
+                log('3️⃣ 检查 RPC 连接...');
                 try {
                     const blockNumber = await window.ethereum.request({ method: 'eth_blockNumber' });
                     log(`✅ RPC 连接正常，当前区块: ${parseInt(blockNumber, 16)}`, 'success');
                 } catch (rpcError) {
                     log(`❌ RPC 连接失败: ${rpcError.message}`, 'error');
+                    log(`错误代码: ${rpcError.code}`);
                 }
                 log('');
                 
-                log('3️⃣ 检查账户连接...');
+                log('4️⃣ 检查账户连接...');
                 try {
                     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                     if (accounts.length > 0) {
@@ -983,14 +1000,13 @@
                 }
                 log('');
                 
-                log('4️⃣ 测试简单的 eth_call...');
+                log('5️⃣ 测试简单的 eth_call...');
                 try {
-                    // 调用 BUSD 的 totalSupply()
                     const result = await window.ethereum.request({
                         method: 'eth_call',
                         params: [{
                             to: BUSD_ADDRESS,
-                            data: '0x18160ddd' // totalSupply()
+                            data: '0x18160ddd'
                         }, 'latest']
                     });
                     log(`✅ eth_call 成功: ${result}`, 'success');
@@ -999,17 +1015,54 @@
                 }
                 log('');
                 
-                log('5️⃣ 检查 MetaMask 版本信息...');
+                log('6️⃣ 检查 MetaMask 版本和状态...');
                 if (window.ethereum._metamask) {
-                    log(`MetaMask 内部对象存在`);
+                    log(`✅ MetaMask 内部对象存在`, 'success');
                     if (window.ethereum._metamask.isUnlocked) {
-                        const unlocked = await window.ethereum._metamask.isUnlocked();
-                        log(`钱包解锁状态: ${unlocked}`);
+                        try {
+                            const unlocked = await window.ethereum._metamask.isUnlocked();
+                            log(`钱包解锁状态: ${unlocked ? '✅ 已解锁' : '❌ 已锁定'}`, unlocked ? 'success' : 'error');
+                        } catch (e) {
+                            log(`无法检查解锁状态: ${e.message}`, 'warning');
+                        }
                     }
+                } else {
+                    log(`⚠️ MetaMask 内部对象不存在（可能是旧版本）`, 'warning');
+                }
+                log('');
+                
+                log('7️⃣ 测试网络连通性...');
+                try {
+                    const response = await fetch('https://bsc-testnet-rpc.publicnode.com', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            method: 'eth_blockNumber',
+                            params: [],
+                            id: 1
+                        })
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ 直连 RPC 节点成功，区块: ${parseInt(data.result, 16)}`, 'success');
+                    } else {
+                        log(`❌ 直连 RPC 节点失败: HTTP ${response.status}`, 'error');
+                    }
+                } catch (fetchError) {
+                    log(`❌ 网络请求失败: ${fetchError.message}`, 'error');
+                    log(`⚠️ 可能原因：防火墙、代理、网络限制`, 'warning');
                 }
                 log('');
                 
                 log('========== ✅ 健康检查完成 ==========', 'success');
+                log('');
+                log('📋 诊断建议：');
+                log('1. 如果"钱包插件"显示多个，请禁用其他钱包插件');
+                log('2. 如果"钱包解锁状态"为已锁定，请解锁 MetaMask');
+                log('3. 如果"网络请求失败"，请检查防火墙/代理设置');
+                log('4. 尝试更新 MetaMask 到最新版本');
+                log('5. 尝试在无痕模式下测试（排除其他扩展干扰）');
                 
             } catch (error) {
                 log(`❌ 健康检查失败: ${error.message}`, 'error');
