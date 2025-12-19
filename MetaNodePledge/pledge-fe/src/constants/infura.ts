@@ -9,5 +9,5 @@ import { SupportedChainId } from './chains';
 export const INFURA_NETWORK_URLS: { [key in SupportedChainId]: string } = {
   [SupportedChainId.MAINNET]: `https://bsc-dataseed.binance.org`,
 
-  [SupportedChainId.BSCTEST]: `https://endpoints.omniatech.io/v1/bsc/testnet/public`,
+  [SupportedChainId.BSCTEST]: `https://data-seed-prebsc-1-s1.binance.org:8545`,
 };

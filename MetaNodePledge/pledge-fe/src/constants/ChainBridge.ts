@@ -30,7 +30,7 @@ const ChainBridge: ChainBridgeConfig = {
       decimals: 18,
       bridgeAddress: '0xacB8C5D7be5B23644eCe55789Eb6aA6bd6C31e64',
       erc20HandlerAddress: '0x3e1066Ea99f2934e728D85b03BD72d1BbD61D2D4',
-      rpcUrl: 'https://endpoints.omniatech.io/v1/bsc/testnet/public',
+      rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       explorerUrl: 'https://testnet.bscscan.com',
       type: 'Ethereum',
       nativeTokenSymbol: 'tBNB',

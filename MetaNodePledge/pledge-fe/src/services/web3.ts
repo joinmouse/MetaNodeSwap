@@ -19,12 +19,26 @@ const IBEP20Abi = require('_abis/IBEP20.json');
 
 import type { Contract } from 'web3-eth-contract';
 
-import { ethers } from 'ethers';
 interface SubContract<T> extends Contract {
   methods: T;
 }
 
-const web3 = new Web3(Web3.givenProvider);
+// 备用 RPC 配置（当 MetaMask 未连接时使用）
+const FALLBACK_RPC_URLS = {
+  97: 'https://data-seed-prebsc-1-s1.binance.org:8545', // BSC Testnet - Binance Official
+  56: 'https://bsc-dataseed.binance.org', // BSC Mainnet - Binance Official
+};
+
+// 优先使用 MetaMask，如果未连接则使用备用 RPC
+const getWeb3Provider = () => {
+  if (Web3.givenProvider) {
+    return Web3.givenProvider;
+  }
+  // 默认使用 BSC 测试网
+  return FALLBACK_RPC_URLS[97];
+};
+
+const web3 = new Web3(getWeb3Provider());
 
 const getPledgerBridgeBSC = (address?: string) => {
   return new web3.eth.Contract(PledgerBridgeBSCAbi, address) as SubContract<PledgerBridgeBSC>;
@@ -84,10 +98,25 @@ const gasOptions = async (params = {}): Promise<SendOptions> => {
   
   console.log('[gasOptions] Using account:', from);
   
-  return {
-    from,
-    ...params,
-  };
+  try {
+    // 获取当前 Gas Price
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log('[gasOptions] Current gas price:', gasPrice);
+    
+    // 返回配置，让 MetaMask 自动估算 gas limit
+    return {
+      from,
+      gasPrice: gasPrice,
+      ...params,
+    };
+  } catch (error) {
+    console.error('[gasOptions] Failed to get gas price:', error);
+    // 如果获取失败，返回基本配置
+    return {
+      from,
+      ...params,
+    };
+  }
 };
 export {
   web3,

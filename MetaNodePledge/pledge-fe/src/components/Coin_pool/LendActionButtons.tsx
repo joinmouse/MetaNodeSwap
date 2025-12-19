@@ -40,7 +40,6 @@ const LendActionButtons: React.FC<LendActionButtonsProps> = ({
   poolinfo,
   pid,
   mode,
-  warning,
   setwarning,
   setloadings,
   next,
@@ -65,7 +64,11 @@ const LendActionButtons: React.FC<LendActionButtonsProps> = ({
       return false;
     }
     if (lendvalue > (balance && Number(dealNumber_18(balance)))) {
-      setwarning('transfer amount exceeds balance');
+      console.log("lendvalue:", lendvalue);
+      console.log("balance:", balance);
+      console.log("dealNumber_18(balance):", dealNumber_18(balance));
+      console.log("Number(dealNumber_18(balance)):",balance && Number(dealNumber_18(balance)));
+      setwarning('transfer amount exceeds balance lend');
       return false;
     }
     if (Number(lendvalue) + Number(poolinfo[pid]?.available_to_lend[1] ?? 0) > Number(poolinfo[pid]?.maxSupply ?? 0)) {

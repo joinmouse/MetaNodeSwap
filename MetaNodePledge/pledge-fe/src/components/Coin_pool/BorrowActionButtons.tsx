@@ -63,7 +63,7 @@ const BorrowActionButtons: React.FC<BorrowActionButtonsProps> = ({
       return false;
     }
     if (data > (balanceborrow && Number(dealNumber_18(balanceborrow)))) {
-      setwarning('transfer amount exceeds balance');
+      setwarning('transfer amount exceeds balance borrow');
       return false;
     }
     setwarning('');
@@ -121,11 +121,7 @@ const BorrowActionButtons: React.FC<BorrowActionButtonsProps> = ({
                 Approve
               </Button1>
             )}
-            <Button1
-              style={{ width: '48%' }}
-              disabled={true}
-              onClick={() => message.success('Processing complete!')}
-            >
+            <Button1 style={{ width: '48%' }} disabled={true} onClick={() => message.success('Processing complete!')}>
               Borrow
             </Button1>
           </>
@@ -135,11 +131,7 @@ const BorrowActionButtons: React.FC<BorrowActionButtonsProps> = ({
             <Button1 style={{ width: '48%', borderRadius: '15px' }} disabled={true}>
               Approve
             </Button1>
-            <Button1
-              style={{ width: '48%', borderRadius: '15px' }}
-              loading={loadings}
-              onClick={handleBorrowExecute}
-            >
+            <Button1 style={{ width: '48%', borderRadius: '15px' }} loading={loadings} onClick={handleBorrowExecute}>
               Borrow
             </Button1>
           </>
