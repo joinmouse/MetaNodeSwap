@@ -59,9 +59,11 @@ const WalletNoConnected = styled(HeaderBox)`
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IConnectWallet {}
+export interface IConnectWallet {
+  className?: string;
+}
 
-const ConnectWallet: React.FC<IConnectWallet> = () => {
+const ConnectWallet: React.FC<IConnectWallet> = ({ className }) => {
   const triedEager = useEagerConnect();
   const chainInfo = useRecoilValue(chainInfoState);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -186,13 +188,13 @@ const ConnectWallet: React.FC<IConnectWallet> = () => {
     }
     return (
       <>
-        <WalletNoConnected onClick={handleOnCLickConnectWallet}>Connect Wallet</WalletNoConnected>
+        <WalletNoConnected onClick={handleOnCLickConnectWallet} className={className}>Connect Wallet</WalletNoConnected>
         <WalletModal />
         {/* {!!error?<WalletNoConnected>Wrong Network</WalletNoConnected>:<WalletNoConnected onClick={handleOnCLickConnectWallet}>Connect Wallet</WalletNoConnected>} */}
       </>
     );
   }
-  return <>{ButtonSwitchComponent()}</>;
+  return <div className={className}>{ButtonSwitchComponent()}</div>;
 };
 
 export default ConnectWallet;

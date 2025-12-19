@@ -76,6 +76,14 @@ const getDefaultAccount = async () => {
 
 const gasOptions = async (params = {}): Promise<SendOptions> => {
   const from = await getDefaultAccount();
+  
+  if (!from) {
+    console.error('[gasOptions] No account found. Please connect wallet.');
+    throw new Error('No account connected. Please connect your wallet.');
+  }
+  
+  console.log('[gasOptions] Using account:', from);
+  
   return {
     from,
     ...params,

@@ -13,12 +13,43 @@ const ERC20Server = {
 
   //授权
   async Approve(contractAddress, amount, chainId) {
-    const contract = getERC20Contract(contractAddress);
-    const options = await gasOptions();
-    const rates = await contract.methods
-      .approve(chainId == 97 ? pledge_address : chainId == 56 ? pledge_mainaddress : pledge_mainaddress, amount)
-      .send(options);
-    return rates;
+    console.log('[ERC20Server.Approve] Starting approval:', {
+      contractAddress,
+      amount,
+      chainId,
+      spenderAddress: chainId == 97 ? pledge_address : chainId == 56 ? pledge_mainaddress : pledge_mainaddress,
+    });
+
+    try {
+      const contract = getERC20Contract(contractAddress);
+      const options = await gasOptions();
+      
+      console.log('[ERC20Server.Approve] Gas options:', options);
+      
+      const spender = chainId == 97 ? pledge_address : chainId == 56 ? pledge_mainaddress : pledge_mainaddress;
+      
+      const rates = await contract.methods
+        .approve(spender, amount)
+        .send(options);
+      
+      console.log('[ERC20Server.Approve] Approval successful:', {
+        transactionHash: rates.transactionHash,
+        blockNumber: rates.blockNumber,
+        gasUsed: rates.gasUsed,
+      });
+      
+      return rates;
+    } catch (error: any) {
+      console.error('[ERC20Server.Approve] Approval failed:', {
+        error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        contractAddress,
+        amount,
+        chainId,
+      });
+      throw error;
+    }
   },
   //
   async allowance(contractAddress, chainId) {

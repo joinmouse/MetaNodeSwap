@@ -80,14 +80,43 @@ const LendActionButtons: React.FC<LendActionButtonsProps> = ({
     if (!validateLendTransaction()) return;
     setloadings(true);
     const num = dealNumber(lendvalue);
+    
+    console.log('[Approve] Starting approval transaction:', {
+      tokenAddress: poolinfo[pid]?.Sp,
+      amount: num,
+      lendValue: lendvalue,
+      chainId,
+      pid,
+    });
+    
     try {
-      await services.ERC20Server.Approve(poolinfo[pid]?.Sp ?? 0, num, chainId);
+      const result = await services.ERC20Server.Approve(poolinfo[pid]?.Sp ?? 0, num, chainId);
+      console.log('[Approve] Transaction successful:', result);
       openNotification('Success');
       setloadings(false);
       next();
       await services.ERC20Server.allowance(poolinfo[pid]?.Sp ?? 0, chainId);
-    } catch (error) {
-      openNotificationerror('Error');
+    } catch (error: any) {
+      console.error('[Approve] Transaction failed:', {
+        error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        tokenAddress: poolinfo[pid]?.Sp,
+        amount: num,
+        chainId,
+      });
+      
+      // 根据错误类型显示更友好的提示
+      let errorMsg = 'Error';
+      if (error?.code === 4001) {
+        errorMsg = 'User rejected the transaction';
+      } else if (error?.message?.includes('insufficient funds')) {
+        errorMsg = 'Insufficient funds for gas';
+      } else if (error?.message) {
+        errorMsg = `Error: ${error.message.substring(0, 100)}`;
+      }
+      
+      openNotificationerror(errorMsg);
       setloadings(false);
     }
   };
@@ -96,14 +125,40 @@ const LendActionButtons: React.FC<LendActionButtonsProps> = ({
     if (!validateLendTransaction()) return;
     setloadings(true);
     const num = dealNumber(lendvalue);
+    
+    console.log('[Lend] Starting lend transaction:', {
+      pid,
+      amount: num,
+      tokenAddress: poolinfo[pid]?.Sp,
+      chainId,
+    });
+    
     try {
-      await services.PoolServer.depositLend(pid, num, poolinfo[pid]?.Sp ?? 0, chainId);
+      const result = await services.PoolServer.depositLend(pid, num, poolinfo[pid]?.Sp ?? 0, chainId);
+      console.log('[Lend] Transaction successful:', result);
       setloadings(false);
       openNotificationlend('Success');
       prev();
       window.open(`${pageURL.Lend_Borrow.replace(':mode', `${mode}`)}`, '_self');
-    } catch (error) {
-      openNotificationerrorlend('Error');
+    } catch (error: any) {
+      console.error('[Lend] Transaction failed:', {
+        error,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        pid,
+        amount: num,
+      });
+      
+      let errorMsg = 'Error';
+      if (error?.code === 4001) {
+        errorMsg = 'User rejected the transaction';
+      } else if (error?.message?.includes('insufficient funds')) {
+        errorMsg = 'Insufficient funds for gas';
+      } else if (error?.message) {
+        errorMsg = `Error: ${error.message.substring(0, 100)}`;
+      }
+      
+      openNotificationerrorlend(errorMsg);
       setloadings(false);
     }
   };
