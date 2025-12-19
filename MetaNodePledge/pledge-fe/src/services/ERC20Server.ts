@@ -1,5 +1,4 @@
 import { gasOptions, getERC20Contract, getDefaultAccount } from './web3';
-import type { ERC20 } from '_src/contracts/ERC20';
 import { pledge_address, ORACLE_address, pledge_mainaddress } from '_src/utils/constants';
 
 const ERC20Server = {
@@ -11,7 +10,7 @@ const ERC20Server = {
     return rates;
   },
 
-  //授权
+  // 授权
   async Approve(contractAddress, amount, chainId) {
     console.log('[ERC20Server.Approve] Starting approval:', {
       contractAddress,
@@ -28,9 +27,25 @@ const ERC20Server = {
       
       const spender = chainId == 97 ? pledge_address : chainId == 56 ? pledge_mainaddress : pledge_mainaddress;
       
-      const rates = await contract.methods
-        .approve(spender, amount)
-        .send(options);
+      // 尝试手动指定 gas limit 来避免 MetaMask 估算失败
+      const approveMethod = contract.methods.approve(spender, amount);
+      
+      console.log('[ERC20Server.Approve] Estimating gas...');
+      let gasLimit;
+      try {
+        gasLimit = await approveMethod.estimateGas({ from: options.from });
+        console.log('[ERC20Server.Approve] Estimated gas:', gasLimit);
+      } catch (gasError: any) {
+        console.warn('[ERC20Server.Approve] Gas estimation failed, using default:', gasError?.message);
+        gasLimit = 100000; // 使用默认值
+      }
+      
+      console.log('[ERC20Server.Approve] Sending transaction with gas limit:', gasLimit);
+      
+      const rates = await approveMethod.send({
+        ...options,
+        gas: gasLimit,
+      });
       
       console.log('[ERC20Server.Approve] Approval successful:', {
         transactionHash: rates.transactionHash,

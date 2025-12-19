@@ -39,7 +39,7 @@ const currencyInfos = {
         symbol: 'BNB',
         decimals: 18,
       },
-      rpcUrls: ['https://bsc-dataseed.binance.org'],
+      rpcUrls: ['https://bsc-rpc.publicnode.com'],
       blockExplorerUrls: ['https://bscscan.com'],
     },
   },
@@ -61,8 +61,7 @@ const currencyInfos = {
         decimals: 18,
       },
       rpcUrls: [
-        'https://data-seed-prebsc-1-s1.binance.org:8545',
-        'https://data-seed-prebsc-2-s1.binance.org:8545'
+        'https://bsc-testnet-rpc.publicnode.com'
       ],
       blockExplorerUrls: ['https://testnet.bscscan.com'],
     },

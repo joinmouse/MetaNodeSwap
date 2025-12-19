@@ -25,8 +25,8 @@ interface SubContract<T> extends Contract {
 
 // 备用 RPC 配置（当 MetaMask 未连接时使用）
 const FALLBACK_RPC_URLS = {
-  97: 'https://data-seed-prebsc-1-s1.binance.org:8545', // BSC Testnet - Binance Official
-  56: 'https://bsc-dataseed.binance.org', // BSC Mainnet - Binance Official
+  97: 'https://bsc-testnet-rpc.publicnode.com', // BSC Testnet - PublicNode (已验证可用)
+  56: 'https://bsc-rpc.publicnode.com', // BSC Mainnet - PublicNode
 };
 
 // 优先使用 MetaMask，如果未连接则使用备用 RPC
@@ -98,25 +98,12 @@ const gasOptions = async (params = {}): Promise<SendOptions> => {
   
   console.log('[gasOptions] Using account:', from);
   
-  try {
-    // 获取当前 Gas Price
-    const gasPrice = await web3.eth.getGasPrice();
-    console.log('[gasOptions] Current gas price:', gasPrice);
-    
-    // 返回配置，让 MetaMask 自动估算 gas limit
-    return {
-      from,
-      gasPrice: gasPrice,
-      ...params,
-    };
-  } catch (error) {
-    console.error('[gasOptions] Failed to get gas price:', error);
-    // 如果获取失败，返回基本配置
-    return {
-      from,
-      ...params,
-    };
-  }
+  // 只返回 from 地址，让 MetaMask 自动处理 gas price 和 gas limit
+  // 这样可以避免 RPC 节点不一致导致的 "signal is aborted" 错误
+  return {
+    from,
+    ...params,
+  };
 };
 export {
   web3,

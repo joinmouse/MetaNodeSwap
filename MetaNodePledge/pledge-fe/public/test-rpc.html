@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RPC 诊断工具</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .button-group {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button { 
+            padding: 12px 24px; 
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 12px; 
+            border-left: 4px solid #ccc;
+            background: white;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+        .success { 
+            border-left-color: #4CAF50;
+            background: #f1f8f4;
+        }
+        .error { 
+            border-left-color: #f44336;
+            background: #fef1f0;
+        }
+        .warning {
+            border-left-color: #ff9800;
+            background: #fff8f0;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .clear-btn {
+            background: #f44336;
+        }
+        .clear-btn:hover {
+            background: #da190b;
+        }
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .info-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 Approve 分步调试工具</h1>
+    
+    <div class="info-box">
+        <h3>使用说明</h3>
+        <p>此工具将 Approve 授权操作拆分成 6 个独立步骤，帮助你精确定位问题所在：</p>
+        <ol>
+            <li><strong>步骤1：连接钱包</strong> - 连接 MetaMask 并获取账户地址</li>
+            <li><strong>步骤2：检查链ID</strong> - 确认当前在 BSC 测试网（Chain ID: 97）</li>
+            <li><strong>步骤3：检查余额</strong> - 确认 BNB 余额足够支付 Gas</li>
+            <li><strong>步骤4：构建交易</strong> - 构建 Approve 交易数据</li>
+            <li><strong>步骤5：估算Gas</strong> - 估算交易所需的 Gas（⚠️ 最容易出问题的步骤）</li>
+            <li><strong>步骤6：发送交易</strong> - 发送交易到区块链并等待确认</li>
+        </ol>
+        <p style="color: #d32f2f; font-weight: bold;">💡 提示：请按顺序依次点击步骤按钮，如果某一步失败，会显示详细的错误信息和解决方案。</p>
+    </div>
+    
+    <div class="button-group">
+        <button onclick="step1_connectWallet()" style="background: #2196F3;">步骤1️⃣ 连接钱包</button>
+        <button onclick="step2_checkChain()" style="background: #2196F3;">步骤2️⃣ 检查链ID</button>
+        <button onclick="step3_checkBalance()" style="background: #2196F3;">步骤3️⃣ 检查余额</button>
+        <button onclick="step4_buildTransaction()" style="background: #2196F3;">步骤4️⃣ 构建交易</button>
+        <button onclick="step5_estimateGas()" style="background: #2196F3;">步骤5️⃣ 估算Gas</button>
+        <button onclick="step6_sendTransaction()" style="background: #2196F3;">步骤6️⃣ 发送交易</button>
+    </div>
+    
+    <div class="button-group">
+        <button onclick="testAlternativeMethod()" style="background: #9C27B0;">🧪 测试备用方案</button>
+        <button onclick="checkMetaMaskHealth()" style="background: #FF9800;">🏥 检查MetaMask健康</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        const BUSD_ADDRESS = '0x3428bFc1AC181205B91AC25B56136f1B59c55ae4';
+        const PLEDGE_POOL_ADDRESS = '0x713a90b5e2b703dc30307f0b872e5d666c42e40d';
+        const PUBLIC_RPC = 'https://bsc-testnet-rpc.publicnode.com';
+        
+        function log(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = 'result ' + type;
+            const time = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>[${time}]</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`[${time}] ${message}`);
+            
+            // 自动滚动到底部
+            div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+        
+        // clearResults 函数已移除，日志将持续追加
+        
+        // 移除了旧的测试函数，只保留分步调试功能
+        
+        async function switchWallet_removed() {
+            log('========== 切换钱包 ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装', 'error');
+                    return;
+                }
+                
+                log('正在请求切换账户...');
+                log('💡 提示：请在 MetaMask 弹窗中选择其他账户', 'warning');
+                
+                // 请求切换账户
+                const accounts = await window.ethereum.request({
+                    method: 'wallet_requestPermissions',
+                    params: [{ eth_accounts: {} }]
+                });
+                
+                // 获取新账户
+                const newAccounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                log(`✅ 已切换到账户: <strong>${newAccounts[0]}</strong>`, 'success');
+                
+                // 自动查询新账户的余额
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [newAccounts[0], 'latest']
+                });
+                const balanceBNB = parseInt(balance, 16) / 1e18;
+                log(`BNB 余额: <strong>${balanceBNB.toFixed(4)} BNB</strong>`);
+                
+                if (balanceBNB < 0.01) {
+                    log('⚠️ 警告：BNB 余额不足，可能无法支付 Gas 费用', 'warning');
+                }
+                
+            } catch (error) {
+                if (error.code === 4001) {
+                    log('❌ 用户取消了切换操作', 'warning');
+                } else {
+                    log(`❌ 切换失败: ${error.message}`, 'error');
+                    console.error('Switch Wallet Error:', error);
+                }
+            }
+        }
+        
+        async function testMetaMaskRPC_removed() {
+            log('========== 开始测试 MetaMask RPC ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装！请先安装 MetaMask 扩展', 'error');
+                    return;
+                }
+                
+                log('✓ MetaMask 已检测到');
+                
+                // 请求连接
+                log('正在请求连接账户...');
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                log(`✓ 账户已连接: <strong>${accounts[0]}</strong>`);
+                
+                // 获取链ID
+                const chainId = await window.ethereum.request({ 
+                    method: 'eth_chainId' 
+                });
+                const chainIdDec = parseInt(chainId, 16);
+                log(`✓ Chain ID: ${chainId} (十进制: <strong>${chainIdDec}</strong>)`);
+                
+                if (chainIdDec !== 97) {
+                    log(`⚠️ 警告：当前不是 BSC 测试网！请切换到 BSC Testnet (Chain ID: 97)`, 'warning');
+                }
+                
+                // 获取区块号
+                log('正在获取当前区块号...');
+                const blockNumber = await window.ethereum.request({ 
+                    method: 'eth_blockNumber' 
+                });
+                log(`✓ 当前区块: <strong>${parseInt(blockNumber, 16)}</strong>`);
+                
+                // 获取 Gas Price
+                log('正在获取 Gas Price...');
+                const gasPrice = await window.ethereum.request({ 
+                    method: 'eth_gasPrice' 
+                });
+                const gasPriceGwei = parseInt(gasPrice, 16) / 1e9;
+                log(`✓ Gas Price: ${gasPrice} (${gasPriceGwei.toFixed(2)} Gwei)`);
+                
+                // 获取余额
+                log('正在获取 BNB 余额...');
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [accounts[0], 'latest']
+                });
+                const balanceBNB = parseInt(balance, 16) / 1e18;
+                log(`✓ BNB 余额: <strong>${balanceBNB.toFixed(4)} BNB</strong>`);
+                
+                if (balanceBNB < 0.01) {
+                    log(`⚠️ 警告：BNB 余额不足，可能无法支付 Gas 费用`, 'warning');
+                }
+                
+                log('========== ✅ MetaMask RPC 测试通过！ ==========', 'success');
+                
+            } catch (error) {
+                log(`========== ❌ MetaMask RPC 测试失败 ==========`, 'error');
+                log(`错误信息: ${error.message}`, 'error');
+                log(`错误代码: ${error.code}`, 'error');
+                console.error('MetaMask RPC Error:', error);
+            }
+        }
+        
+        async function testDirectRPC_removed() {
+            log('========== 开始测试直连 RPC ==========', 'warning');
+            
+            try {
+                log(`正在连接: ${PUBLIC_RPC}`);
+                
+                // 测试 eth_blockNumber
+                const blockResponse = await fetch(PUBLIC_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_blockNumber',
+                        params: [],
+                        id: 1
+                    })
+                });
+                
+                const blockData = await blockResponse.json();
+                if (blockData.result) {
+                    log(`✓ 当前区块: <strong>${parseInt(blockData.result, 16)}</strong>`);
+                } else {
+                    throw new Error('无法获取区块号: ' + JSON.stringify(blockData));
+                }
+                
+                // 测试 eth_chainId
+                const chainResponse = await fetch(PUBLIC_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_chainId',
+                        params: [],
+                        id: 2
+                    })
+                });
+                
+                const chainData = await chainResponse.json();
+                if (chainData.result) {
+                    log(`✓ Chain ID: ${chainData.result} (十进制: <strong>${parseInt(chainData.result, 16)}</strong>)`);
+                } else {
+                    throw new Error('无法获取链ID: ' + JSON.stringify(chainData));
+                }
+                
+                // 测试 eth_gasPrice
+                const gasPriceResponse = await fetch(PUBLIC_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_gasPrice',
+                        params: [],
+                        id: 3
+                    })
+                });
+                
+                const gasPriceData = await gasPriceResponse.json();
+                if (gasPriceData.result) {
+                    const gasPriceGwei = parseInt(gasPriceData.result, 16) / 1e9;
+                    log(`✓ Gas Price: ${gasPriceData.result} (${gasPriceGwei.toFixed(2)} Gwei)`);
+                } else {
+                    throw new Error('无法获取Gas价格: ' + JSON.stringify(gasPriceData));
+                }
+                
+                log('========== ✅ 直连 RPC 测试通过！ ==========', 'success');
+                
+            } catch (error) {
+                log(`========== ❌ 直连 RPC 测试失败 ==========`, 'error');
+                log(`错误信息: ${error.message}`, 'error');
+                console.error('Direct RPC Error:', error);
+            }
+        }
+        
+        async function testApprove_removed() {
+            log('========== 开始测试 Approve 交易 ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装', 'error');
+                    return;
+                }
+                
+                log('正在连接 MetaMask...');
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                log(`✓ 使用账户: ${accounts[0]}`);
+                
+                // 检查链ID
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (parseInt(chainId, 16) !== 97) {
+                    log('❌ 请先切换到 BSC 测试网 (Chain ID: 97)', 'error');
+                    return;
+                }
+                
+                log(`Token 地址: ${BUSD_ADDRESS}`);
+                log(`Spender 地址: ${PLEDGE_POOL_ADDRESS}`);
+                log(`授权金额: 8 BUSD (8000000000000000000 wei)`);
+                
+                // ERC20 approve 方法的编码
+                // approve(address spender, uint256 amount)
+                const methodId = '0x095ea7b3';
+                const spenderParam = PLEDGE_POOL_ADDRESS.slice(2).padStart(64, '0');
+                const amountParam = '6F05B59D3B20000'.padStart(64, '0'); // 8 * 10^18
+                const data = methodId + spenderParam + amountParam;
+                
+                log('正在发送交易...');
+                log('⚠️ 请在 MetaMask 中确认交易，<strong>不要点击"拒绝"</strong>', 'warning');
+                
+                const sendTime = Date.now();
+                let txHash;
+                
+                try {
+                    txHash = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [{
+                            from: accounts[0],
+                            to: BUSD_ADDRESS,
+                            data: data,
+                            gas: '0x186A0', // 100000
+                        }]
+                    });
+                } catch (sendError) {
+                    const elapsed = ((Date.now() - sendTime) / 1000).toFixed(1);
+                    log(`❌ 交易发送失败 (耗时 ${elapsed} 秒)`, 'error');
+                    throw sendError;
+                }
+                
+                const elapsed = ((Date.now() - sendTime) / 1000).toFixed(1);
+                log(`========== ✅ 交易已发送！(耗时 ${elapsed} 秒) ==========`, 'success');
+                log(`交易哈希: <strong>${txHash}</strong>`);
+                log(`查看交易: <a href="https://testnet.bscscan.com/tx/${txHash}" target="_blank">https://testnet.bscscan.com/tx/${txHash}</a>`);
+                
+                // 等待交易确认
+                log('正在等待交易确认...');
+                const waitingLogId = 'waiting-log-' + Date.now();
+                let receipt = null;
+                let attempts = 0;
+                while (!receipt && attempts < 30) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    receipt = await window.ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    });
+                    attempts++;
+                    if (!receipt) {
+                        // 追加新的等待日志
+                        log(`⏳ 等待确认中... (已等待 ${attempts * 2} 秒)`, 'warning');
+                    }
+                }
+                
+                if (receipt) {
+                    const totalTime = ((Date.now() - sendTime) / 1000).toFixed(1);
+                    if (receipt.status === '0x1') {
+                        log(`✅ 交易已确认成功！(总耗时 ${totalTime} 秒)`, 'success');
+                        log(`区块号: ${parseInt(receipt.blockNumber, 16)}`);
+                        log(`Gas 使用: ${parseInt(receipt.gasUsed, 16)}`);
+                    } else {
+                        log('❌ 交易失败', 'error');
+                    }
+                } else {
+                    log('⚠️ 交易已发送但确认超时，请手动查看区块浏览器', 'warning');
+                }
+                
+            } catch (error) {
+                log(`========== ❌ Approve 交易失败 ==========`, 'error');
+                log(`错误信息: ${error.message}`, 'error');
+                log(`错误代码: ${error.code || '未知'}`, 'error');
+                
+                // 显示完整的错误对象
+                if (error.data) {
+                    log(`错误数据: ${JSON.stringify(error.data)}`, 'error');
+                }
+                if (error.stack) {
+                    log(`错误堆栈: ${error.stack.substring(0, 200)}...`, 'error');
+                }
+                
+                if (error.code === 4001) {
+                    log('💡 提示：你拒绝了交易', 'warning');
+                } else if (error.code === -32603) {
+                    log('💡 提示：这是 "signal is aborted" 错误！', 'warning');
+                    log('可能原因：', 'warning');
+                    log('1. MetaMask 的 RPC 配置有问题', 'warning');
+                    log('2. RPC 节点无法连接', 'warning');
+                    log('3. Gas 估算失败', 'warning');
+                    log('4. 网络请求被中断', 'warning');
+                    log('', 'warning');
+                    log('🔧 建议解决方案：', 'warning');
+                    log('1. 打开 MetaMask -> 设置 -> 网络 -> BSC Testnet', 'warning');
+                    log('2. 检查 RPC URL 是否为: https://bsc-testnet-rpc.publicnode.com', 'warning');
+                    log('3. 确保 RPC URL 以 https:// 开头（不是 http://）', 'warning');
+                    log('4. 尝试删除并重新添加 BSC 测试网', 'warning');
+                } else if (error.code === -32602) {
+                    log('💡 提示：参数错误', 'warning');
+                } else if (error.code === -32000) {
+                    log('💡 提示：Gas 不足或余额不足', 'warning');
+                } else {
+                    log('💡 未知错误类型，请查看浏览器控制台获取更多信息', 'warning');
+                }
+                
+                console.error('Approve Error (完整错误对象):', error);
+                console.error('Error keys:', Object.keys(error));
+            }
+        }
+        
+        async function checkAllowance_removed() {
+            log('========== 查询授权额度 ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装', 'error');
+                    return;
+                }
+                
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                // ERC20 allowance(address owner, address spender)
+                const methodId = '0xdd62ed3e';
+                const ownerParam = accounts[0].slice(2).padStart(64, '0');
+                const spenderParam = PLEDGE_POOL_ADDRESS.slice(2).padStart(64, '0');
+                const data = methodId + ownerParam + spenderParam;
+                
+                log(`查询账户: ${accounts[0]}`);
+                log(`Spender: ${PLEDGE_POOL_ADDRESS}`);
+                
+                const result = await window.ethereum.request({
+                    method: 'eth_call',
+                    params: [{
+                        to: BUSD_ADDRESS,
+                        data: data
+                    }, 'latest']
+                });
+                
+                const allowance = parseInt(result, 16);
+                const allowanceBUSD = allowance / 1e18;
+                
+                log(`✓ 当前授权额度: <strong>${allowanceBUSD} BUSD</strong>`);
+                log(`原始值: ${allowance} wei`);
+                
+                if (allowance === 0) {
+                    log('⚠️ 授权额度为 0，需要先执行 Approve', 'warning');
+                } else if (allowanceBUSD >= 8) {
+                    log('✅ 授权额度充足，可以执行借贷操作', 'success');
+                } else {
+                    log(`⚠️ 授权额度不足 8 BUSD，当前仅 ${allowanceBUSD} BUSD`, 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 查询失败: ${error.message}`, 'error');
+                console.error('Allowance Error:', error);
+            }
+        }
+        
+        // 全局变量存储分步调试的状态
+        let debugState = {
+            account: null,
+            chainId: null,
+            balance: null,
+            txData: null,
+            gasEstimate: null
+        };
+        
+        // 步骤1：连接钱包
+        async function step1_connectWallet() {
+            log('========== 步骤1️⃣：连接钱包 ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装', 'error');
+                    return;
+                }
+                
+                log('正在请求连接 MetaMask...');
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                debugState.account = accounts[0];
+                log(`✅ 连接成功！`, 'success');
+                log(`账户地址: <strong>${debugState.account}</strong>`);
+                log('💡 下一步：点击 "步骤2️⃣ 检查链ID"', 'success');
+                
+            } catch (error) {
+                log(`❌ 连接失败: ${error.message}`, 'error');
+                console.error('Step 1 Error:', error);
+            }
+        }
+        
+        // 步骤2：检查链ID
+        async function step2_checkChain() {
+            log('========== 步骤2️⃣：检查链ID ==========', 'warning');
+            
+            try {
+                if (!debugState.account) {
+                    log('⚠️ 请先执行步骤1：连接钱包', 'warning');
+                    return;
+                }
+                
+                log('正在获取链ID...');
+                const chainId = await window.ethereum.request({ 
+                    method: 'eth_chainId' 
+                });
+                
+                debugState.chainId = parseInt(chainId, 16);
+                log(`当前链ID: ${chainId} (十进制: <strong>${debugState.chainId}</strong>)`);
+                
+                if (debugState.chainId === 97) {
+                    log('✅ 链ID正确！当前在 BSC 测试网', 'success');
+                    log('💡 下一步：点击 "步骤3️⃣ 检查余额"', 'success');
+                } else {
+                    log('❌ 链ID错误！请切换到 BSC 测试网 (Chain ID: 97)', 'error');
+                    log('🔧 解决方法：在 MetaMask 中切换网络到 "BSC Testnet"', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 检查失败: ${error.message}`, 'error');
+                console.error('Step 2 Error:', error);
+            }
+        }
+        
+        // 步骤3：检查余额
+        async function step3_checkBalance() {
+            log('========== 步骤3️⃣：检查余额 ==========', 'warning');
+            
+            try {
+                if (!debugState.account) {
+                    log('⚠️ 请先执行步骤1：连接钱包', 'warning');
+                    return;
+                }
+                
+                log('正在获取 BNB 余额...');
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [debugState.account, 'latest']
+                });
+                
+                debugState.balance = parseInt(balance, 16) / 1e18;
+                log(`BNB 余额: <strong>${debugState.balance.toFixed(6)} BNB</strong>`);
+                
+                if (debugState.balance >= 0.01) {
+                    log('✅ 余额充足！可以支付 Gas 费用', 'success');
+                    log('💡 下一步：点击 "步骤4️⃣ 构建交易"', 'success');
+                } else {
+                    log('❌ 余额不足！需要至少 0.01 BNB 支付 Gas', 'error');
+                    log('🔧 解决方法：从水龙头获取测试 BNB', 'warning');
+                    log('水龙头地址: https://testnet.bnbchain.org/faucet-smart', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 检查失败: ${error.message}`, 'error');
+                console.error('Step 3 Error:', error);
+            }
+        }
+        
+        // 步骤4：构建交易
+        async function step4_buildTransaction() {
+            log('========== 步骤4️⃣：构建交易数据 ==========', 'warning');
+            
+            try {
+                if (!debugState.account) {
+                    log('⚠️ 请先执行步骤1：连接钱包', 'warning');
+                    return;
+                }
+                
+                log('正在构建 Approve 交易数据...');
+                
+                // ERC20 approve(address spender, uint256 amount)
+                const methodId = '0x095ea7b3';
+                const spenderParam = PLEDGE_POOL_ADDRESS.slice(2).padStart(64, '0');
+                const amountParam = '6F05B59D3B20000'.padStart(64, '0'); // 8 * 10^18
+                const data = methodId + spenderParam + amountParam;
+                
+                debugState.txData = {
+                    from: debugState.account,
+                    to: BUSD_ADDRESS,
+                    data: data
+                };
+                
+                log('✅ 交易数据构建成功！', 'success');
+                log(`From: <strong>${debugState.txData.from}</strong>`);
+                log(`To (BUSD): <strong>${debugState.txData.to}</strong>`);
+                log(`Method: <strong>approve(address,uint256)</strong>`);
+                log(`Spender: <strong>${PLEDGE_POOL_ADDRESS}</strong>`);
+                log(`Amount: <strong>8 BUSD</strong>`);
+                log(`Data: ${debugState.txData.data.substring(0, 50)}...`);
+                log('💡 下一步：点击 "步骤5️⃣ 估算Gas"', 'success');
+                
+            } catch (error) {
+                log(`❌ 构建失败: ${error.message}`, 'error');
+                console.error('Step 4 Error:', error);
+            }
+        }
+        
+        // 步骤5：估算Gas
+        async function step5_estimateGas() {
+            log('========== 步骤5️⃣：估算 Gas ==========', 'warning');
+            
+            try {
+                if (!debugState.txData) {
+                    log('⚠️ 请先执行步骤4：构建交易', 'warning');
+                    return;
+                }
+                
+                log('正在估算 Gas...');
+                log('⚠️ <strong>这一步最容易出问题！</strong>', 'warning');
+                log('如果这一步失败，说明 MetaMask 的 RPC 连接有问题', 'warning');
+                
+                // 先检查 MetaMask 的 provider 信息
+                log('', 'warning');
+                log('📊 MetaMask Provider 信息:', 'warning');
+                log(`isMetaMask: ${window.ethereum.isMetaMask}`);
+                log(`networkVersion: ${window.ethereum.networkVersion}`);
+                log(`chainId: ${window.ethereum.chainId}`);
+                log(`selectedAddress: ${window.ethereum.selectedAddress}`);
+                log('');
+                
+                const startTime = Date.now();
+                
+                try {
+                    log('🔍 正在调用 eth_estimateGas...');
+                    log(`请求参数: ${JSON.stringify(debugState.txData, null, 2)}`);
+                    
+                    const gasEstimate = await window.ethereum.request({
+                        method: 'eth_estimateGas',
+                        params: [debugState.txData]
+                    });
+                    
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                    debugState.gasEstimate = parseInt(gasEstimate, 16);
+                    
+                    log(`✅ Gas 估算成功！(耗时 ${elapsed} 秒)`, 'success');
+                    log(`估算 Gas: <strong>${debugState.gasEstimate}</strong>`);
+                    log(`建议 Gas Limit: <strong>${Math.ceil(debugState.gasEstimate * 1.2)}</strong> (增加 20% 余量)`);
+                    
+                    // 计算预估费用
+                    const gasPrice = await window.ethereum.request({ method: 'eth_gasPrice' });
+                    const gasPriceGwei = parseInt(gasPrice, 16) / 1e9;
+                    const estimatedCost = (debugState.gasEstimate * parseInt(gasPrice, 16)) / 1e18;
+                    
+                    log(`当前 Gas Price: ${gasPriceGwei.toFixed(2)} Gwei`);
+                    log(`预估费用: <strong>${estimatedCost.toFixed(6)} BNB</strong>`);
+                    
+                    log('💡 下一步：点击 "步骤6️⃣ 发送交易"', 'success');
+                    
+                } catch (estimateError) {
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                    log(`❌ Gas 估算失败！(耗时 ${elapsed} 秒)`, 'error');
+                    log(`错误信息: ${estimateError.message}`, 'error');
+                    log(`错误代码: ${estimateError.code || '未知'}`, 'error');
+                    
+                    log('', 'error');
+                    log('🔍 <strong>问题定位：Gas 估算失败</strong>', 'error');
+                    log('这说明 MetaMask 无法通过 RPC 节点估算 Gas', 'error');
+                    log('', 'error');
+                    log('🔧 可能的原因：', 'warning');
+                    log('1. MetaMask 配置的 RPC 节点无法访问', 'warning');
+                    log('2. RPC URL 格式错误（缺少 https://）', 'warning');
+                    log('3. RPC 节点不稳定或已失效', 'warning');
+                    log('4. 网络连接问题', 'warning');
+                    log('', 'warning');
+                    log('💡 解决方案：', 'success');
+                    log('1. 打开 MetaMask -> 设置 -> 网络 -> BSC Testnet', 'success');
+                    log('2. 修改 RPC URL 为: https://bsc-testnet-rpc.publicnode.com', 'success');
+                    log('3. 确保 Chain ID 为: 97', 'success');
+                    log('4. 保存后重新测试', 'success');
+                    
+                    console.error('Gas Estimate Error:', estimateError);
+                    throw estimateError;
+                }
+                
+            } catch (error) {
+                log(`❌ 步骤失败: ${error.message}`, 'error');
+                console.error('Step 5 Error:', error);
+            }
+        }
+        
+        // 步骤6：发送交易
+        async function step6_sendTransaction() {
+            log('========== 步骤6️⃣：发送交易 ==========', 'warning');
+            
+            try {
+                if (!debugState.txData) {
+                    log('⚠️ 请先执行步骤4：构建交易', 'warning');
+                    return;
+                }
+                
+                if (!debugState.gasEstimate) {
+                    log('⚠️ 建议先执行步骤5：估算Gas', 'warning');
+                    log('但我们可以尝试使用固定的 Gas Limit...', 'warning');
+                }
+                
+                // 准备交易参数
+                const txParams = {
+                    from: debugState.txData.from,
+                    to: debugState.txData.to,
+                    data: debugState.txData.data,
+                    gas: debugState.gasEstimate ? 
+                        '0x' + Math.ceil(debugState.gasEstimate * 1.2).toString(16) : 
+                        '0x186A0' // 100000
+                };
+                
+                log('交易参数:');
+                log(`From: ${txParams.from}`);
+                log(`To: ${txParams.to}`);
+                log(`Gas Limit: ${parseInt(txParams.gas, 16)}`);
+                log('');
+                log('正在发送交易...');
+                log('⚠️ <strong>请在 MetaMask 中确认交易</strong>', 'warning');
+                log('⚠️ 不要点击"拒绝"按钮', 'warning');
+                log('');
+                
+                // 添加详细的调试信息
+                log('🔍 交易详细信息:', 'warning');
+                log(`完整交易参数: ${JSON.stringify(txParams, null, 2)}`);
+                log('');
+                
+                // 监听 MetaMask 事件
+                const eventLog = [];
+                const accountsChangedHandler = (accounts) => {
+                    eventLog.push(`accountsChanged: ${accounts}`);
+                    log(`📡 事件: accountsChanged - ${accounts}`, 'warning');
+                };
+                const chainChangedHandler = (chainId) => {
+                    eventLog.push(`chainChanged: ${chainId}`);
+                    log(`📡 事件: chainChanged - ${chainId}`, 'warning');
+                };
+                const disconnectHandler = (error) => {
+                    eventLog.push(`disconnect: ${error}`);
+                    log(`📡 事件: disconnect - ${JSON.stringify(error)}`, 'error');
+                };
+                
+                window.ethereum.on('accountsChanged', accountsChangedHandler);
+                window.ethereum.on('chainChanged', chainChangedHandler);
+                window.ethereum.on('disconnect', disconnectHandler);
+                
+                const sendTime = Date.now();
+                let txHash;
+                
+                try {
+                    log('📤 正在调用 eth_sendTransaction...');
+                    
+                    // 使用 Promise.race 添加超时控制
+                    const sendPromise = window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [txParams]
+                    });
+                    
+                    const timeoutPromise = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('发送交易超时（60秒）')), 60000);
+                    });
+                    
+                    txHash = await Promise.race([sendPromise, timeoutPromise]);
+                } catch (sendError) {
+                    const elapsed = ((Date.now() - sendTime) / 1000).toFixed(1);
+                    
+                    // 移除事件监听
+                    window.ethereum.removeListener('accountsChanged', accountsChangedHandler);
+                    window.ethereum.removeListener('chainChanged', chainChangedHandler);
+                    window.ethereum.removeListener('disconnect', disconnectHandler);
+                    
+                    log(`❌ 交易发送失败 (耗时 ${elapsed} 秒)`, 'error');
+                    log(`错误信息: ${sendError.message}`, 'error');
+                    log(`错误代码: ${sendError.code || '未知'}`, 'error');
+                    
+                    // 显示完整的错误对象
+                    log('', 'error');
+                    log('🔍 完整错误信息:', 'error');
+                    log(`Error.name: ${sendError.name}`, 'error');
+                    log(`Error.message: ${sendError.message}`, 'error');
+                    log(`Error.code: ${sendError.code}`, 'error');
+                    if (sendError.data) {
+                        log(`Error.data: ${JSON.stringify(sendError.data)}`, 'error');
+                    }
+                    if (sendError.stack) {
+                        log(`Error.stack: ${sendError.stack.substring(0, 300)}`, 'error');
+                    }
+                    log(`Error keys: ${Object.keys(sendError).join(', ')}`, 'error');
+                    log('');
+                    
+                    // 显示事件日志
+                    if (eventLog.length > 0) {
+                        log('📡 捕获到的事件:', 'warning');
+                        eventLog.forEach(e => log(e, 'warning'));
+                        log('');
+                    } else {
+                        log('📡 未捕获到任何 MetaMask 事件', 'warning');
+                        log('');
+                    }
+                    
+                    if (sendError.code === 4001) {
+                        log('💡 你点击了"拒绝"按钮', 'warning');
+                    } else if (sendError.code === -32603) {
+                        log('🔍 <strong>问题定位：signal is aborted (-32603)</strong>', 'error');
+                        log('这个错误通常发生在 MetaMask 尝试发送交易时', 'error');
+                        log('', 'error');
+                        log('🧪 可能的原因分析：', 'warning');
+                        log('1. MetaMask 内部 RPC 请求被中断', 'warning');
+                        log('2. RPC 节点响应超时或返回错误', 'warning');
+                        log('3. MetaMask 与页面通信异常', 'warning');
+                        log('4. 浏览器扩展冲突', 'warning');
+                        log('5. MetaMask 版本问题', 'warning');
+                        log('', 'error');
+                        log('🔧 建议尝试的解决方案：', 'success');
+                        log('方案1: 在 MetaMask 中手动切换 RPC 节点', 'success');
+                        log('  - 打开 MetaMask -> 设置 -> 网络 -> BSC Testnet', 'success');
+                        log('  - 尝试更换为: https://data-seed-prebsc-1-s1.binance.org:8545', 'success');
+                        log('', 'success');
+                        log('方案2: 重置 MetaMask', 'success');
+                        log('  - 打开 MetaMask -> 设置 -> 高级 -> 重置账户', 'success');
+                        log('  - 注意：这会清除交易历史，但不会丢失资产', 'success');
+                        log('', 'success');
+                        log('方案3: 禁用其他浏览器扩展', 'success');
+                        log('  - 暂时禁用其他钱包扩展（如 Coinbase Wallet）', 'success');
+                        log('  - 禁用广告拦截器', 'success');
+                        log('', 'success');
+                        log('方案4: 更新 MetaMask', 'success');
+                        log('  - 检查是否有 MetaMask 更新', 'success');
+                        log('  - 或尝试重新安装 MetaMask', 'success');
+                        log('', 'success');
+                        log('方案5: 使用其他浏览器', 'success');
+                        log('  - 尝试在 Chrome/Brave/Edge 中测试', 'success');
+                    } else if (sendError.message && sendError.message.includes('timeout')) {
+                        log('💡 交易发送超时（60秒）', 'warning');
+                        log('这说明 MetaMask 长时间没有响应', 'warning');
+                        log('可能是 RPC 节点响应太慢或 MetaMask 卡住了', 'warning');
+                    }
+                    
+                    console.error('Send Transaction Error (完整对象):', sendError);
+                    console.error('Error keys:', Object.keys(sendError));
+                    console.error('Event log:', eventLog);
+                    throw sendError;
+                }
+                
+                // 移除事件监听
+                window.ethereum.removeListener('accountsChanged', accountsChangedHandler);
+                window.ethereum.removeListener('chainChanged', chainChangedHandler);
+                window.ethereum.removeListener('disconnect', disconnectHandler);
+                
+                const elapsed = ((Date.now() - sendTime) / 1000).toFixed(1);
+                log(`========== ✅ 交易已发送！(耗时 ${elapsed} 秒) ==========`, 'success');
+                log(`交易哈希: <strong>${txHash}</strong>`);
+                log(`查看交易: <a href="https://testnet.bscscan.com/tx/${txHash}" target="_blank">https://testnet.bscscan.com/tx/${txHash}</a>`);
+                
+                // 等待确认
+                log('正在等待交易确认...');
+                const waitingLogId = 'waiting-log-' + Date.now();
+                let receipt = null;
+                let attempts = 0;
+                
+                while (!receipt && attempts < 30) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    receipt = await window.ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    });
+                    attempts++;
+                    
+                    if (!receipt) {
+                        // 追加新的等待日志
+                        log(`⏳ 等待确认中... (已等待 ${attempts * 2} 秒)`, 'warning');
+                    }
+                }
+                
+                if (receipt) {
+                    const totalTime = ((Date.now() - sendTime) / 1000).toFixed(1);
+                    if (receipt.status === '0x1') {
+                        log(`✅ 交易已确认成功！(总耗时 ${totalTime} 秒)`, 'success');
+                        log(`区块号: ${parseInt(receipt.blockNumber, 16)}`);
+                        log(`Gas 使用: ${parseInt(receipt.gasUsed, 16)}`);
+                        log('', 'success');
+                        log('🎉 <strong>Approve 操作完成！</strong>', 'success');
+                        log('现在可以执行借贷操作了', 'success');
+                    } else {
+                        log('❌ 交易失败', 'error');
+                    }
+                } else {
+                    log('⚠️ 交易已发送但确认超时，请手动查看区块浏览器', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 步骤失败: ${error.message}`, 'error');
+                console.error('Step 6 Error:', error);
+            }
+        }
+        
+        // 新增：检查 MetaMask 健康状态
+        async function checkMetaMaskHealth() {
+            log('========== 🏥 MetaMask 健康检查 ==========', 'warning');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ MetaMask 未安装', 'error');
+                    return;
+                }
+                
+                log('1️⃣ 检查 MetaMask 基本信息...');
+                log(`isMetaMask: ${window.ethereum.isMetaMask}`);
+                log(`isConnected: ${window.ethereum.isConnected ? window.ethereum.isConnected() : '未知'}`);
+                log(`networkVersion: ${window.ethereum.networkVersion}`);
+                log(`chainId: ${window.ethereum.chainId}`);
+                log(`selectedAddress: ${window.ethereum.selectedAddress}`);
+                log('');
+                
+                log('2️⃣ 检查 RPC 连接...');
+                try {
+                    const blockNumber = await window.ethereum.request({ method: 'eth_blockNumber' });
+                    log(`✅ RPC 连接正常，当前区块: ${parseInt(blockNumber, 16)}`, 'success');
+                } catch (rpcError) {
+                    log(`❌ RPC 连接失败: ${rpcError.message}`, 'error');
+                }
+                log('');
+                
+                log('3️⃣ 检查账户连接...');
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        log(`✅ 账户已连接: ${accounts[0]}`, 'success');
+                    } else {
+                        log('⚠️ 未连接账户', 'warning');
+                    }
+                } catch (accountError) {
+                    log(`❌ 获取账户失败: ${accountError.message}`, 'error');
+                }
+                log('');
+                
+                log('4️⃣ 测试简单的 eth_call...');
+                try {
+                    // 调用 BUSD 的 totalSupply()
+                    const result = await window.ethereum.request({
+                        method: 'eth_call',
+                        params: [{
+                            to: BUSD_ADDRESS,
+                            data: '0x18160ddd' // totalSupply()
+                        }, 'latest']
+                    });
+                    log(`✅ eth_call 成功: ${result}`, 'success');
+                } catch (callError) {
+                    log(`❌ eth_call 失败: ${callError.message}`, 'error');
+                }
+                log('');
+                
+                log('5️⃣ 检查 MetaMask 版本信息...');
+                if (window.ethereum._metamask) {
+                    log(`MetaMask 内部对象存在`);
+                    if (window.ethereum._metamask.isUnlocked) {
+                        const unlocked = await window.ethereum._metamask.isUnlocked();
+                        log(`钱包解锁状态: ${unlocked}`);
+                    }
+                }
+                log('');
+                
+                log('========== ✅ 健康检查完成 ==========', 'success');
+                
+            } catch (error) {
+                log(`❌ 健康检查失败: ${error.message}`, 'error');
+                console.error('Health Check Error:', error);
+            }
+        }
+        
+        // 新增：测试备用发送方案
+        async function testAlternativeMethod() {
+            log('========== 🧪 测试备用发送方案 ==========', 'warning');
+            
+            try {
+                if (!debugState.account) {
+                    log('⚠️ 请先执行步骤1：连接钱包', 'warning');
+                    return;
+                }
+                
+                log('此方案将尝试不同的交易发送方式...');
+                log('');
+                
+                // 方案1：不指定 gas，让 MetaMask 自己估算
+                log('📋 方案1：让 MetaMask 自动估算 Gas');
+                
+                const methodId = '0x095ea7b3';
+                const spenderParam = PLEDGE_POOL_ADDRESS.slice(2).padStart(64, '0');
+                const amountParam = '6F05B59D3B20000'.padStart(64, '0');
+                const data = methodId + spenderParam + amountParam;
+                
+                const txParams = {
+                    from: debugState.account,
+                    to: BUSD_ADDRESS,
+                    data: data
+                    // 不指定 gas，让 MetaMask 自己估算
+                };
+                
+                log(`交易参数: ${JSON.stringify(txParams, null, 2)}`);
+                log('⚠️ 请在 MetaMask 中确认交易', 'warning');
+                log('');
+                
+                const startTime = Date.now();
+                
+                try {
+                    const txHash = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [txParams]
+                    });
+                    
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                    log(`✅ 交易发送成功！(耗时 ${elapsed} 秒)`, 'success');
+                    log(`交易哈希: <strong>${txHash}</strong>`);
+                    log(`查看交易: <a href="https://testnet.bscscan.com/tx/${txHash}" target="_blank">https://testnet.bscscan.com/tx/${txHash}</a>`);
+                    
+                } catch (sendError) {
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                    log(`❌ 方案1失败 (耗时 ${elapsed} 秒)`, 'error');
+                    log(`错误: ${sendError.message}`, 'error');
+                    log(`错误代码: ${sendError.code}`, 'error');
+                    
+                    if (sendError.code !== 4001) {
+                        log('');
+                        log('📋 方案2：使用更大的 Gas Limit');
+                        
+                        const txParams2 = {
+                            from: debugState.account,
+                            to: BUSD_ADDRESS,
+                            data: data,
+                            gas: '0x30D40' // 200000
+                        };
+                        
+                        log(`交易参数: ${JSON.stringify(txParams2, null, 2)}`);
+                        log('⚠️ 请在 MetaMask 中确认交易', 'warning');
+                        
+                        try {
+                            const txHash2 = await window.ethereum.request({
+                                method: 'eth_sendTransaction',
+                                params: [txParams2]
+                            });
+                            
+                            log(`✅ 方案2成功！`, 'success');
+                            log(`交易哈希: <strong>${txHash2}</strong>`);
+                            log(`查看交易: <a href="https://testnet.bscscan.com/tx/${txHash2}" target="_blank">https://testnet.bscscan.com/tx/${txHash2}</a>`);
+                            
+                        } catch (sendError2) {
+                            log(`❌ 方案2也失败了`, 'error');
+                            log(`错误: ${sendError2.message}`, 'error');
+                            log(`错误代码: ${sendError2.code}`, 'error');
+                            
+                            log('');
+                            log('💡 所有方案都失败了，问题可能出在：', 'warning');
+                            log('1. MetaMask 本身的问题（建议重启或重装）', 'warning');
+                            log('2. BSC 测试网 RPC 节点的问题', 'warning');
+                            log('3. 浏览器或系统环境问题', 'warning');
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ 测试失败: ${error.message}`, 'error');
+                console.error('Alternative Method Error:', error);
+            }
+        }
+        
+        // 页面加载时的提示
+        window.addEventListener('load', () => {
+            log('🎉 Approve 分步调试工具已就绪！', 'success');
+            log('💡 请按顺序点击步骤1-6，每一步都会显示详细的执行结果', 'success');
+            log('⚠️ 如果某一步失败，会显示具体的错误原因和解决方案', 'warning');
+            log('', 'success');
+            log('🆕 新增功能：', 'success');
+            log('  - 🧪 测试备用方案：尝试不同的交易发送方式', 'success');
+            log('  - 🏥 检查MetaMask健康：全面检查 MetaMask 状态', 'success');
+            log('', 'success');
+            log('🚀 现在可以开始测试了，请点击 "步骤1️⃣ 连接钱包"', 'success');
+        });
+    </script>
+</body>
+</html>

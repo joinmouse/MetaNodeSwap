@@ -7,7 +7,7 @@ import { SupportedChainId } from './chains';
  * These are the network URLs used by the interface when there is not another available source of chain data
  */
 export const INFURA_NETWORK_URLS: { [key in SupportedChainId]: string } = {
-  [SupportedChainId.MAINNET]: `https://bsc-dataseed.binance.org`,
+  [SupportedChainId.MAINNET]: `https://bsc-rpc.publicnode.com`,
 
-  [SupportedChainId.BSCTEST]: `https://data-seed-prebsc-1-s1.binance.org:8545`,
+  [SupportedChainId.BSCTEST]: `https://bsc-testnet-rpc.publicnode.com`,
 };
