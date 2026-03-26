@@ -114,14 +114,26 @@ export const Web3Provider = ({ children }) => {
       }
     }
 
-    const handleChainChanged = (chainId) => {
+    const handleChainChanged = async (chainId) => {
       const newChainId = parseInt(chainId, 16)
       setChainId(newChainId)
       if (newChainId !== NETWORK.chainId) {
         toast.error(`请切换到 ${NETWORK.name} 网络`)
+      } else {
+        // 重新初始化 provider 和 signer，而不是刷新页面
+        try {
+          const newProvider = new ethers.BrowserProvider(window.ethereum)
+          const accounts = await newProvider.send('eth_accounts', [])
+          if (accounts.length > 0) {
+            const newSigner = await newProvider.getSigner()
+            setProvider(newProvider)
+            setSigner(newSigner)
+            toast.success(`已切换到 ${NETWORK.name} 网络`)
+          }
+        } catch (error) {
+          console.error('重新连接失败:', error)
+        }
       }
-      // 刷新页面以重新加载数据
-      window.location.reload()
     }
 
     window.ethereum.on('accountsChanged', handleAccountsChanged)

@@ -10,7 +10,7 @@ export const CONTRACTS = {
 export const NETWORK = {
   chainId: 11155111, // Sepolia
   name: 'Sepolia',
-  rpcUrl: 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY',
+  rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/demo',  // TODO: 替换为你自己的 Alchemy/Infura key
   blockExplorer: 'https://sepolia.etherscan.io'
 }
 

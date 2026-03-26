@@ -6,6 +6,8 @@ import {
   checkAllowance,
   formatNumber,
   getAmountsOut,
+  getPairAddress,
+  getPairReserves,
   getTokenBalance,
   swapExactTokensForTokens
 } from '../utils/contract'
@@ -89,9 +91,34 @@ const SwapCard = () => {
           const output = ethers.formatUnits(amounts[1], toToken.decimals)
           setToAmount(output)
           
-          // 简单的价格影响计算（实际应该基于储备量）
-          const impact = (parseFloat(fromAmount) / parseFloat(output) - 1) * 100
-          setPriceImpact(Math.abs(impact).toFixed(2))
+          // 价格影响计算：基于储备量
+          // 获取交易对储备量来精确计算价格影响
+          try {
+            const pairAddress = await getPairAddress(fromToken.address, toToken.address, provider)
+            if (pairAddress && pairAddress !== ethers.ZeroAddress) {
+              const reserves = await getPairReserves(pairAddress, provider)
+              if (reserves) {
+                // 确定哪个储备对应 fromToken
+                const fromAddr = fromToken.address.toLowerCase()
+                const [reserveIn, reserveOut] = fromAddr < toToken.address.toLowerCase()
+                  ? [reserves.reserve0, reserves.reserve1]
+                  : [reserves.reserve1, reserves.reserve0]
+
+                // 价格影响 = amountIn / (reserveIn + amountIn) * 100
+                const amountInBig = BigInt(amountIn)
+                const reserveInBig = BigInt(reserveIn)
+                if (reserveInBig > 0n) {
+                  const impact = Number(amountInBig * 10000n / (reserveInBig + amountInBig)) / 100
+                  setPriceImpact(impact.toFixed(2))
+                } else {
+                  setPriceImpact('0')
+                }
+              }
+            }
+          } catch (err) {
+            console.error('价格影响计算失败:', err)
+            setPriceImpact('0')
+          }
         }
       } catch (error) {
         console.error('计算输出失败:', error)
